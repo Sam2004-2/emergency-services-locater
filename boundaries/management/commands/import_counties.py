@@ -108,7 +108,7 @@ class Command(BaseCommand):
                         'polygon_geojson': 1,
                         'limit': 5,  # Get multiple results to find the best
                     }
-                    
+                    # Make the request to OSM to populate county boundary
                     response = requests.get(
                         'https://nominatim.openstreetmap.org/search',
                         params=params,
