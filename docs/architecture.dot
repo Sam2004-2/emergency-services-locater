@@ -1,0 +1,32 @@
+digraph architecture {
+  rankdir=LR;
+  node [shape=box, style="rounded,filled", color="#1f77b4", fontname="Helvetica", fillcolor="#e8f0fe"];
+
+  subgraph cluster_client {
+    label="Client";
+    color="#cfe2ff";
+    "Leaflet/Bootstrap UI";
+  }
+
+  subgraph cluster_web {
+    label="Web Tier";
+    color="#cfe2ff";
+    node [fillcolor="#e8f5e9", color="#2e7d32"];
+    "Nginx Reverse Proxy";
+    "Django + DRF (Gunicorn)";
+  }
+
+  subgraph cluster_db {
+    label="Data Tier";
+    color="#cfe2ff";
+    node [fillcolor="#f3e5f5", color="#6a1b9a"];
+    "PostgreSQL + PostGIS";
+    "Spatial Data Imports (ogr2ogr)";
+  }
+
+  "Leaflet/Bootstrap UI" -> "Nginx Reverse Proxy" [label="HTTPS" color="#1f77b4"];
+  "Nginx Reverse Proxy" -> "Django + DRF (Gunicorn)" [label="WSGI" color="#2e7d32"];
+  "Django + DRF (Gunicorn)" -> "PostgreSQL + PostGIS" [label="psycopg2" color="#6a1b9a"];
+  "Spatial Data Imports (ogr2ogr)" -> "PostgreSQL + PostGIS" [label="SQL / COPY" color="#6a1b9a"];
+  "Django + DRF (Gunicorn)" -> "Leaflet/Bootstrap UI" [label="REST / GeoJSON" color="#1f77b4"];
+}
