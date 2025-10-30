@@ -48,28 +48,28 @@ class EmergencyFacility(models.Model):
     
     Represents various emergency service locations (hospitals, fire stations,
     police stations, ambulance bases) with geographic coordinates for spatial queries.
-    
-    Note: This model uses managed=False as data is maintained externally.
     """
     
-    id = models.IntegerField(primary_key=True)
-    name = models.TextField()
-    type = models.CharField(max_length=32, choices=FACILITY_CHOICES)
-    address = models.TextField(null=True, blank=True)
-    phone = models.TextField(null=True, blank=True)
-    website = models.TextField(null=True, blank=True)
-    properties = models.JSONField(default=dict, blank=True)
-    geom = models.PointField(srid=4326, help_text="Facility location (WGS84)")
-    created_at = models.DateTimeField()
-    updated_at = models.DateTimeField()
+    name = models.CharField(max_length=200, help_text="Facility name")
+    type = models.CharField(max_length=32, choices=FACILITY_CHOICES, db_index=True)
+    address = models.CharField(max_length=500, null=True, blank=True)
+    phone = models.CharField(max_length=50, null=True, blank=True)
+    website = models.URLField(max_length=500, null=True, blank=True)
+    properties = models.JSONField(default=dict, blank=True, help_text="Additional metadata")
+    geom = models.PointField(srid=4326, spatial_index=True, help_text="Facility location (WGS84)")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     objects = EmergencyFacilityQuerySet.as_manager()
 
     class Meta:
-        db_table = 'emergency_facility'
-        managed = False
+        db_table = 'services_emergencyfacility'
         verbose_name = 'Emergency Facility'
         verbose_name_plural = 'Emergency Facilities'
+        ordering = ['name']
+        indexes = [
+            models.Index(fields=['type', 'created_at']),
+        ]
 
     def __str__(self) -> str:
         return f"{self.name} ({self.type})"
