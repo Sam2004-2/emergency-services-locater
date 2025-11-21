@@ -1,0 +1,99 @@
+{% extends 'frontend/base.html' %}
+
+{% block title %}Profile - Emergency Services Locator{% endblock %}
+
+{% block content %}
+<div class="es-profile-container">
+  <div class="es-profile-card">
+    <div class="es-profile-header">
+      <div class="es-profile-avatar">
+        <i class="bi bi-person-circle"></i>
+      </div>
+      <h1 class="es-profile-name">{{ user.username }}</h1>
+      <div class="es-role-badge {% if user.is_superuser %}es-badge-admin{% elif user.is_staff %}es-badge-editor{% else %}es-badge-viewer{% endif %}">
+        {% if user.is_superuser %}Administrator{% elif user.is_staff %}Editor{% else %}Viewer{% endif %}
+      </div>
+    </div>
+    
+    <div class="es-profile-body">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+      
+      <div class="es-profile-section">
+        <h2 class="es-section-title">
+          <i class="bi bi-person"></i>
+          Account Information
+        </h2>
+        <div class="es-info-grid">
+          <div class="es-info-item">
+            <span class="es-info-label">Username</span>
+            <span class="es-info-value">{{ user.username }}</span>
+          </div>
+          <div class="es-info-item">
+            <span class="es-info-label">Email</span>
+            <span class="es-info-value">{{ user.email|default:"Not set" }}</span>
+          </div>
+          <div class="es-info-item">
+            <span class="es-info-label">Member Since</span>
+            <span class="es-info-value">{{ user.date_joined|date:"F j, Y" }}</span>
+          </div>
+          <div class="es-info-item">
+            <span class="es-info-label">Last Login</span>
+            <span class="es-info-value">{{ user.last_login|date:"F j, Y, g:i a"|default:"Never" }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="es-profile-section">
+        <h2 class="es-section-title">
+          <i class="bi bi-shield-check"></i>
+          Permissions
+        </h2>
+        <div class="es-permissions-list">
+          <div class="es-permission-item">
+            <i class="bi bi-check-circle-fill text-success"></i>
+            <span>View emergency facilities</span>
+          </div>
+          <div class="es-permission-item">
+            <i class="bi bi-check-circle-fill text-success"></i>
+            <span>View county boundaries</span>
+          </div>
+          <div class="es-permission-item">
+            <i class="bi bi-check-circle-fill text-success"></i>
+            <span>Use location services</span>
+          </div>
+          {% if user.is_staff %}
+          <div class="es-permission-item">
+            <i class="bi bi-check-circle-fill text-success"></i>
+            <span>Add and edit facilities</span>
+          </div>
+          {% endif %}
+          {% if user.is_superuser %}
+          <div class="es-permission-item">
+            <i class="bi bi-check-circle-fill text-success"></i>
+            <span>Full administrative access</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <div class="es-profile-actions">
+        <a href="{% url 'accounts:password_change' %}" class="es-btn es-btn-secondary">
+          <i class="bi bi-key"></i>
+          <span>Change Password</span>
+        </a>
+        <a href="{% url 'home' %}" class="es-btn es-btn-primary">
+          <i class="bi bi-map"></i>
+          <span>Back to Map</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

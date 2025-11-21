@@ -1,0 +1,82 @@
+{% extends 'frontend/base.html' %}
+
+{% block title %}Sign In - Emergency Services Locator{% endblock %}
+
+{% block content %}
+<div class="es-auth-container">
+  <div class="es-auth-card">
+    <div class="es-auth-header">
+      <div class="es-auth-logo">
+        <i class="bi bi-shield-plus fs-4"></i>
+      </div>
+      <h1 class="es-auth-title">Sign In</h1>
+      <p class="es-auth-subtitle">Access the Emergency Services Locator</p>
+    </div>
+    
+    <div class="es-auth-body">
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+      
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger">
+          {% for error in form.non_field_errors %}
+            {{ error }}
+          {% endfor %}
+        </div>
+      {% endif %}
+      
+      <form method="post" novalidate>
+        {% csrf_token %}
+        
+        <div class="es-form-group">
+          <label for="id_username" class="es-form-label">Username</label>
+          <input type="text" name="username" id="id_username" 
+                 class="es-form-control {% if form.username.errors %}is-invalid{% endif %}"
+                 placeholder="Enter your username" required autofocus>
+          {% if form.username.errors %}
+            <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+          {% endif %}
+        </div>
+        
+        <div class="es-form-group">
+          <label for="id_password" class="es-form-label">Password</label>
+          <input type="password" name="password" id="id_password"
+                 class="es-form-control {% if form.password.errors %}is-invalid{% endif %}"
+                 placeholder="Enter your password" required>
+          {% if form.password.errors %}
+            <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
+          {% endif %}
+        </div>
+        
+        <button type="submit" class="es-btn es-btn-primary w-100">
+          <i class="bi bi-box-arrow-in-right"></i>
+          <span>Sign In</span>
+        </button>
+      </form>
+      
+      <div class="text-center mt-3">
+        <a href="{% url 'accounts:password_reset' %}" class="small" style="color: var(--es-accent);">
+          Forgot your password?
+        </a>
+      </div>
+    </div>
+    
+    <div class="es-auth-footer">
+      Don't have an account? 
+      <a href="{% url 'accounts:register' %}">Register here</a>
+    </div>
+  </div>
+  
+  <div class="text-center mt-4">
+    <a href="{% url 'home' %}" class="small" style="color: var(--es-text-muted);">
+      <i class="bi bi-arrow-left me-1"></i>Back to Map
+    </a>
+  </div>
+</div>
+{% endblock %}
