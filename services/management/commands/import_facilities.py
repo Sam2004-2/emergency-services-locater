@@ -19,8 +19,6 @@ import time
 from django.core.management.base import BaseCommand
 from django.contrib.gis.geos import Point
 from django.db import transaction
-from django.db.models import Max
-from django.utils import timezone
 from services.models import EmergencyFacility
 
 
@@ -171,12 +169,6 @@ class Command(BaseCommand):
 
                 type_count = 0
                 with transaction.atomic():
-                    # Get next available ID
-                    max_id = EmergencyFacility.objects.aggregate(
-                        Max('id')
-                    )['id__max'] or 0
-                    next_id = max_id + 1
-                    
                     for element in elements:
                         try:
                             tags = element.get('tags', {})
@@ -216,9 +208,8 @@ class Command(BaseCommand):
                             properties['osm_id'] = element.get('id')
                             properties['osm_type'] = element.get('type')
 
-                            # Create facility with sequential ID
+                            # Create facility - Django handles ID via BigAutoField
                             EmergencyFacility.objects.create(
-                                id=next_id,
                                 name=name,
                                 type=facility_type,
                                 address=address,
@@ -226,11 +217,7 @@ class Command(BaseCommand):
                                 website=website,
                                 properties=properties,
                                 geom=Point(float(lon), float(lat), srid=4326),
-                                created_at=timezone.now(),
-                                updated_at=timezone.now(),
                             )
-                            
-                            next_id += 1
                             type_count += 1
                             created_count += 1
 
@@ -305,8 +292,6 @@ class Command(BaseCommand):
                             website=props.get('website'),
                             properties=props.get('properties', {}),
                             geom=Point(coords[0], coords[1], srid=4326),
-                            created_at=timezone.now(),
-                            updated_at=timezone.now(),
                         )
                         
                         created_count += 1

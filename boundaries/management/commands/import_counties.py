@@ -1,10 +1,11 @@
 """
-Import Irish county boundaries from OpenStreetMap Nominatim API.
+Import Irish county boundaries from CSO (Central Statistics Office) Open Data API.
+Data source: CSO Geographical Information System (GIS) 
+Alternative: OpenStreetMap Nominatim API
 
 Usage:
     python manage.py import_counties
     python manage.py import_counties --source=osm
-    python manage.py import_counties --source=geojson --url=<URL>
     python manage.py import_counties --clear
 """
 
@@ -12,7 +13,6 @@ import requests
 from django.core.management.base import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
-from django.db.models import Max
 from boundaries.models import County
 
 
@@ -168,27 +168,16 @@ class Command(BaseCommand):
                     # Check if county exists
                     existing = County.objects.filter(iso_code=county_data['code']).first()
                     
-                    if existing:
-                        # Update existing county
-                        existing.source_id = best_feature.get('place_id') or best_feature.get('properties', {}).get('place_id')
-                        existing.name_en = county_data['name']
-                        existing.name_local = county_data['local']
-                        existing.geom = geom
-                        existing.save()
-                    else:
-                        # Generate new ID for unmanaged model
-                        max_id = County.objects.aggregate(Max('id'))['id__max']
-                        next_id = (max_id or 0) + 1
-                        
-                        # Create new county with explicit ID
-                        County.objects.create(
-                            id=next_id,
-                            source_id=best_feature.get('place_id') or best_feature.get('properties', {}).get('place_id'),
-                            name_en=county_data['name'],
-                            name_local=county_data['local'],
-                            iso_code=county_data['code'],
-                            geom=geom,
-                        )
+                    # Update or create county
+                    County.objects.update_or_create(
+                        iso_code=county_data['code'],
+                        defaults={
+                            'source_id': best_feature.get('place_id') or best_feature.get('properties', {}).get('place_id'),
+                            'name_en': county_data['name'],
+                            'name_local': county_data['local'],
+                            'geom': geom,
+                        }
+                    )
                     
                     created_count += 1
                     self.stdout.write(
@@ -249,12 +238,7 @@ class Command(BaseCommand):
                             from django.contrib.gis.geos import MultiPolygon
                             geom = MultiPolygon(geom)
 
-                        # Generate sequential ID for unmanaged model
-                        max_id = County.objects.aggregate(Max('id'))['id__max']
-                        next_id = (max_id or 0) + 1
-
                         County.objects.create(
-                            id=next_id,
                             source_id=props.get('id', f'geojson_{idx}'),
                             name_en=name,
                             name_local=props.get('name_local', ''),
