@@ -19,8 +19,9 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-es_locator}
-    ports:
-      - "5432:5432"
+    # DB port NOT exposed externally - internal network only
+    # ports:
+    #   - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -43,9 +44,13 @@ services:
       DJANGO_DEBUG: "False"
       DB_HOST: db
       DB_PORT: 5432
+      DB_NAME: ${POSTGRES_DB:-es_locator}
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASS: ${POSTGRES_PASSWORD:-postgres}
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
       WORKERS: ${WORKERS:-3}
       TIMEOUT: ${TIMEOUT:-60}
+      SEED_DATABASE: ${SEED_DATABASE:-false}
     command: ["/bin/sh", "-c", "/app/docker/web/entrypoint.sh"]
     volumes:
       - staticfiles:/app/staticfiles
