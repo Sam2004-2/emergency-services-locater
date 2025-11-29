@@ -1,67 +1,172 @@
 {% extends 'frontend/base.html' %}
 {% block content %}
-<main class="container-fluid py-3">
-  <div class="row g-3">
-    <aside class="col-12 col-lg-3">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h1 class="h4 mb-3">Emergency Services Locator</h1>
-          <form id="filters" class="vstack gap-3" aria-describedby="filterHelp">
-            <div>
-              <label for="type" class="form-label">Service type</label>
-              <select id="type" class="form-select" aria-label="Service type">
-                <option value="">All</option>
-                <option value="hospital">Hospital</option>
-                <option value="fire_station">Fire Station</option>
-                <option value="police_station">Garda / Police</option>
-                <option value="ambulance_base">Ambulance Base</option>
-              </select>
-            </div>
+<div class="es-main">
+  <!-- Sidebar -->
+  <aside class="es-sidebar" id="sidebar">
+    <div class="es-sidebar-header">
+      <h2 class="es-sidebar-title">Filters</h2>
+      <button class="es-btn-icon es-btn-secondary d-lg-none" id="closeSidebar" aria-label="Close sidebar">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    
+    <div class="es-sidebar-body">
+      <form id="filters" aria-describedby="filterHelp">
+        <!-- Service Type -->
+        <div class="es-form-group">
+          <label for="type" class="es-form-label">Service Type</label>
+          <select id="type" class="es-form-control es-form-select">
+            <option value="">All Services</option>
+            <option value="hospital">Hospital</option>
+            <option value="fire_station">Fire Station</option>
+            <option value="police_station">Garda / Police</option>
+            <option value="ambulance_base">Ambulance Base</option>
+          </select>
+        </div>
 
-            <div>
-              <label for="radius" class="form-label">Radius (km)</label>
-              <input type="range" id="radius" class="form-range" min="1" max="50" value="10">
-              <div class="d-flex justify-content-between">
-                <span class="text-muted">1</span>
-                <span><output id="radiusOut" for="radius">10</output> km</span>
-                <span class="text-muted">50</span>
-              </div>
+        <!-- Radius -->
+        <div class="es-form-group">
+          <label for="radius" class="es-form-label">Search Radius</label>
+          <div class="es-range-container">
+            <input type="range" id="radius" class="es-range" min="1" max="50" value="10">
+            <div class="es-range-labels">
+              <span>1 km</span>
+              <span>50 km</span>
             </div>
-
-            <div class="btn-group" role="group" aria-label="Actions">
-              <button id="locateBtn" type="button" class="btn btn-primary">Locate me</button>
-              <button id="dropPinBtn" type="button" class="btn btn-outline-secondary">Drop pin</button>
+            <div class="es-range-value">
+              <output id="radiusOut" for="radius">10</output> km
             </div>
-            
-            <div class="btn-group w-100" role="group" aria-label="Search actions">
-              <button id="nearestBtn" type="button" class="btn btn-outline-primary">Nearest</button>
-              <button id="radiusBtn" type="button" class="btn btn-outline-secondary">Within radius</button>
-            </div>
+          </div>
+        </div>
 
-            <hr>
+        <!-- Action Buttons -->
+        <div class="es-form-group">
+          <label class="es-form-label">Actions</label>
+          <div class="es-btn-group">
+            <button id="locateBtn" type="button" class="es-btn es-btn-primary">
+              <i class="bi bi-crosshairs"></i>
+              <span>Locate</span>
+            </button>
+            <button id="nearestBtn" type="button" class="es-btn es-btn-secondary">
+              <i class="bi bi-geo-alt"></i>
+              <span>Nearest</span>
+            </button>
+          </div>
+          <button id="radiusBtn" type="button" class="es-btn es-btn-secondary w-100 mt-2">
+            <i class="bi bi-circle"></i>
+            <span>Search Within Radius</span>
+          </button>
+        </div>
 
-            <!-- County dropdown removed - click counties on map instead -->
-            <div class="alert alert-info py-2 px-3 mb-0" role="status">
-              <small class="d-block mb-1"><strong>💡 How to use:</strong></small>
-              <small class="d-block mb-1">• Click <strong>Locate me</strong> or <strong>Drop pin</strong> to set your location</small>
-              <small class="d-block mb-1">• Click <strong>Nearest</strong> to find closest facilities</small>
-              <small class="d-block mb-1">• Click <strong>Within radius</strong> to search the area</small>
-              <small class="text-muted d-block">• Click any county on the map to view its facilities</small>
-            </div>
+        <hr class="my-4" style="border-color: var(--es-border);">
 
-            <div class="form-text" id="filterHelp">
-              Use the tools above or draw a polygon on the map to filter facilities.
-            </div>
-          </form>
+        <!-- Info Box -->
+        <div class="es-info-box">
+          <i class="bi bi-info-circle"></i>
+          <div>
+            <strong>Tip:</strong> Click any county on the map to view its facilities, or draw a polygon to query a custom area.
+          </div>
+        </div>
+      </form>
+    </div>
 
-          <div class="mt-3 small text-muted" aria-live="polite" id="statusMsg">Ready.</div>
+    <div class="es-sidebar-footer">
+      <div id="statusMsg" aria-live="polite" class="small">
+        <span class="es-status-indicator"></span>
+        <span>Ready</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Backdrop for mobile -->
+  <div class="es-sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <!-- Map Container -->
+  <div class="es-map-container">
+    <div class="es-map-top">
+      <div class="es-map-meta">
+        <p class="es-eyebrow">Emergency coverage</p>
+        <div class="es-map-heading">
+          <h1 class="es-map-title">Service map</h1>
+          <span class="es-chip es-chip-live">
+            <i class="bi bi-activity"></i>
+            <span>Live</span>
+          </span>
+        </div>
+        <p class="es-map-subtitle">Use the filters to keep the view focused. Everything is boxed in, clean, and easy to scan.</p>
+        <div class="es-map-actions">
+          <button class="es-btn es-btn-ghost" id="openSidebar" aria-label="Open filters">
+            <i class="bi bi-sliders"></i>
+            <span>Filters</span>
+          </button>
+          <span class="es-chip">Nationwide</span>
+          <span class="es-chip">Offline ready</span>
         </div>
       </div>
-    </aside>
+      <div class="es-map-kpis">
+        <div class="es-kpi">
+          <span class="es-kpi-label">Search mode</span>
+          <span class="es-kpi-value">Map + filters</span>
+        </div>
+        <div class="es-kpi">
+          <span class="es-kpi-label">Coverage</span>
+          <span class="es-kpi-value">Hospitals, Garda, Fire, Ambulance</span>
+        </div>
+      </div>
+    </div>
 
-    <section class="col-12 col-lg-9">
-      <div id="map" class="rounded shadow-sm" role="application" aria-label="Emergency services map" tabindex="0"></div>
-    </section>
+    <div class="es-map-panel">
+      <div id="map" role="application" aria-label="Emergency services map" tabindex="0"></div>
+
+      <!-- Legend -->
+      <div class="es-legend" id="legend">
+        <div class="es-legend-title">Facility Types</div>
+        <div class="es-legend-item">
+          <span class="es-legend-dot hospital"></span>
+          <span>Hospital</span>
+        </div>
+        <div class="es-legend-item">
+          <span class="es-legend-dot fire_station"></span>
+          <span>Fire Station</span>
+        </div>
+        <div class="es-legend-item">
+          <span class="es-legend-dot police_station"></span>
+          <span>Garda / Police</span>
+        </div>
+        <div class="es-legend-item">
+          <span class="es-legend-dot ambulance_base"></span>
+          <span>Ambulance Base</span>
+        </div>
+      </div>
+
+      <!-- Status Bar -->
+      <div class="es-status-bar" id="statusBar">
+        <span class="es-status-indicator" id="statusIndicator"></span>
+        <span id="statusText">Map ready. Click a county or use filters.</span>
+      </div>
+    </div>
   </div>
-</main>
+</div>
+
+<script>
+  // Sidebar toggle for mobile
+  document.addEventListener('DOMContentLoaded', () => {
+    const sidebar = document.getElementById('sidebar');
+    const openBtn = document.getElementById('openSidebar');
+    const closeBtn = document.getElementById('closeSidebar');
+    const backdrop = document.getElementById('sidebarBackdrop');
+    
+    function openSidebar() {
+      sidebar.classList.add('open');
+    }
+    
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+    }
+    
+    openBtn?.addEventListener('click', openSidebar);
+    closeBtn?.addEventListener('click', closeSidebar);
+    backdrop?.addEventListener('click', closeSidebar);
+  });
+</script>
 {% endblock %}
