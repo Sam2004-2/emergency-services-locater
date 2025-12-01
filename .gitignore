@@ -151,3 +151,9 @@ docs/_templates/
 local_config.py
 secrets.yaml
 credentials.json
+
+# Temporary test/debug files
+test_*.py
+test_*.html
+fix_*.py
+*_test.py

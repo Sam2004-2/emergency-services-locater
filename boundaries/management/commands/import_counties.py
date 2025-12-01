@@ -1,11 +1,10 @@
 """
-Import Irish county boundaries from CSO (Central Statistics Office) Open Data API.
-Data source: CSO Geographical Information System (GIS) 
-Alternative: OpenStreetMap Nominatim API
+Import Irish county boundaries from OpenStreetMap Nominatim API.
 
 Usage:
     python manage.py import_counties
     python manage.py import_counties --source=osm
+    python manage.py import_counties --source=geojson --url=<URL>
     python manage.py import_counties --clear
 """
 

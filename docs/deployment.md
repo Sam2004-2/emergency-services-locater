@@ -12,14 +12,11 @@
    ```bash
    cp .env.example .env
    ```
-3. Ensure PostgreSQL + PostGIS are running, then bootstrap schema and seed data:
+3. Create database and enable PostGIS extension:
    ```bash
    createdb es_locator
-   psql -d es_locator -f db/schema/001_extensions.sql
-   psql -d es_locator -f db/schema/010_bounds_counties.sql
-   psql -d es_locator -f db/schema/020_services_facilities.sql
-   psql -d es_locator -f db/schema/040_constraints_indexes.sql
-   psql -d es_locator -f db/import/seed_facilities.sql
+   psql -d es_locator -c "CREATE EXTENSION IF NOT EXISTS postgis;"
+   psql -d es_locator -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
    ```
 4. Apply Django migrations, collect static assets, and create an admin user:
    ```bash
@@ -27,7 +24,12 @@
    python manage.py collectstatic --noinput
    python manage.py createsuperuser
    ```
-5. Run the development server and browse to `http://127.0.0.1:8000/`:
+5. Import data from OpenStreetMap API (optional):
+   ```bash
+   python manage.py import_counties
+   python manage.py import_facilities
+   ```
+6. Run the development server and browse to `http://127.0.0.1:8000/`:
    ```bash
    python manage.py runserver
    ```
@@ -64,7 +66,7 @@
 ## Troubleshooting
 
 - **Ports busy**: adjust exposed ports (`5432`, `80`, `5050`) in `docker-compose.yml` or stop local services
-- **Schema errors**: rerun SQL scripts from `db/schema` to recreate tables and constraints
+- **Schema errors**: rerun Django migrations with `python manage.py migrate` to recreate tables and indexes
 - **Missing static files**: ensure `python manage.py collectstatic` has run and the `staticfiles` volume is mounted for Nginx
-- **SRID complaints**: confirm source data is reprojected to EPSG:4326 before import (`ogr2ogr -t_srs EPSG:4326`)
+- **API import failures**: check network connectivity and OpenStreetMap API rate limits; imports are rate-limited automatically
 - **CSRF/hosts**: update `.env` with `DJANGO_ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` when deploying behind different domains

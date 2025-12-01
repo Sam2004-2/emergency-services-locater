@@ -21,12 +21,19 @@ digraph architecture {
     color="#cfe2ff";
     node [fillcolor="#f3e5f5", color="#6a1b9a"];
     "PostgreSQL + PostGIS";
-    "Spatial Data Imports (ogr2ogr)";
+  }
+
+  subgraph cluster_data_source {
+    label="Data Source";
+    color="#cfe2ff";
+    node [fillcolor="#fff3e0", color="#e65100"];
+    "OpenStreetMap API";
   }
 
   "Leaflet/Bootstrap UI" -> "Nginx Reverse Proxy" [label="HTTPS" color="#1f77b4"];
   "Nginx Reverse Proxy" -> "Django + DRF (Gunicorn)" [label="WSGI" color="#2e7d32"];
   "Django + DRF (Gunicorn)" -> "PostgreSQL + PostGIS" [label="psycopg2" color="#6a1b9a"];
-  "Spatial Data Imports (ogr2ogr)" -> "PostgreSQL + PostGIS" [label="SQL / COPY" color="#6a1b9a"];
+  "Django + DRF (Gunicorn)" -> "OpenStreetMap API" [label="HTTP / GeoJSON" color="#e65100"];
+  "OpenStreetMap API" -> "Django + DRF (Gunicorn)" [label="GeoJSON" color="#e65100"];
   "Django + DRF (Gunicorn)" -> "Leaflet/Bootstrap UI" [label="REST / GeoJSON" color="#1f77b4"];
 }

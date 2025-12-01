@@ -1,22 +1,21 @@
 """
 Import emergency services (hospitals, fire stations, police stations, ambulance bases)
-from various open data APIs.
+from OpenStreetMap Overpass API.
 
 Data sources:
-- OpenStreetMap Overpass API (global, high coverage)
-- HSE Open Data (Irish health services)
-- Custom GeoJSON/CSV files
+- OpenStreetMap Overpass API (global, high coverage) - primary source
+- Custom GeoJSON URLs (optional)
 
 Usage:
     python manage.py import_facilities
     python manage.py import_facilities --country=ireland --types=hospital,fire_station
     python manage.py import_facilities --bbox=-10.5,51.4,-5.4,55.4
+    python manage.py import_facilities --source=geojson --url=<URL>
     python manage.py import_facilities --clear
 """
 
 import requests
 import time
-from datetime import datetime
 from django.core.management.base import BaseCommand
 from django.contrib.gis.geos import Point
 from django.db import transaction
@@ -33,8 +32,8 @@ class Command(BaseCommand):
             '--source',
             type=str,
             default='osm',
-            choices=['osm', 'hse', 'geojson'],
-            help='Data source: osm (OpenStreetMap), hse (HSE Open Data), geojson (custom URL)',
+            choices=['osm', 'geojson'],
+            help='Data source: osm (OpenStreetMap) or geojson (custom URL)',
         )
         parser.add_argument(
             '--types',
@@ -80,8 +79,6 @@ class Command(BaseCommand):
 
         if source == 'osm':
             self.import_from_osm(facility_types, options)
-        elif source == 'hse':
-            self.import_from_hse(facility_types, options)
         elif source == 'geojson':
             url = options['url']
             if not url:
@@ -263,72 +260,6 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(f'\n✓ Total imported: {created_count} facilities')
         )
-
-    def import_from_hse(self, facility_types, options):
-        """
-        Import from HSE (Health Service Executive) Open Data Portal.
-        Currently focuses on Irish health facilities.
-        """
-        self.stdout.write('Fetching facilities from HSE Open Data...')
-        
-        # HSE Open Data API endpoints (example - update with actual endpoints)
-        hse_endpoints = {
-            'hospital': 'https://data.gov.ie/api/3/action/datastore_search?resource_id=hospitals',
-        }
-
-        created_count = 0
-
-        for facility_type in facility_types:
-            if facility_type not in hse_endpoints:
-                self.stdout.write(
-                    self.style.WARNING(f"HSE data not available for: {facility_type}")
-                )
-                continue
-
-            try:
-                response = requests.get(hse_endpoints[facility_type], timeout=30)
-                response.raise_for_status()
-                data = response.json()
-
-                # Process HSE data format (adjust based on actual API structure)
-                records = data.get('result', {}).get('records', [])
-                
-                with transaction.atomic():
-                    for record in records:
-                        try:
-                            # Extract data (adjust field names based on actual API)
-                            name = record.get('name') or record.get('facility_name')
-                            lat = float(record.get('latitude'))
-                            lon = float(record.get('longitude'))
-                            
-                            if not (name and lat and lon):
-                                continue
-
-                            EmergencyFacility.objects.update_or_create(
-                                name=name,
-                                type=facility_type,
-                                defaults={
-                                    'address': record.get('address'),
-                                    'phone': record.get('phone'),
-                                    'website': record.get('website'),
-                                    'geom': Point(lon, lat, srid=4326),
-                                    'created_at': timezone.now(),
-                                    'updated_at': timezone.now(),
-                                }
-                            )
-                            created_count += 1
-
-                        except Exception as e:
-                            continue
-
-                self.stdout.write(
-                    self.style.SUCCESS(f"✓ Imported {created_count} from HSE")
-                )
-
-            except Exception as e:
-                self.stderr.write(
-                    self.style.ERROR(f"Failed to import from HSE: {str(e)}")
-                )
 
     def import_from_geojson(self, url, facility_types, options):
         """Import facilities from a GeoJSON URL"""

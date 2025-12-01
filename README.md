@@ -79,19 +79,19 @@ The **Emergency Services Locator** is a comprehensive geospatial web application
 ## 📸 Screenshots
 
 ### Main Map Interface
-![Main map interface](image.png)
+![Main map interface](docs/screenshots/main-map.png)
 *Interactive map with service markers, county boundaries, and control panel*
 
 ### Proximity Search
-![alt text](image-3.png)
+![alt text](docs/screenshots/proximity-search.png)
 *Find the 5 nearest emergency services to any location*
 
 ### Radius Search
-![alt text](image-2.png)
+![alt text](docs/screenshots/radius-search.png)
 *Discover all services within a customizable radius*
 
 ### Drop Pin Mode
-![alt text](image-4.png)
+![alt text](docs/screenshots/drop-pin-mode.png)
 *Place custom pins anywhere on the map*
 
 ---

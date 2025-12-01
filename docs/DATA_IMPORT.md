@@ -281,9 +281,10 @@ python manage.py import_facilities --types=fire_station --limit=500
 
 ### Database Indexes
 
-The schema already includes spatial indexes:
-- `emergency_facility_geom_idx` - Spatial index on facility locations
-- `admin_counties_geom_idx` - Spatial index on county boundaries
+The schema already includes spatial indexes (automatically created by Django migrations):
+- GIST spatial index on `services_emergencyfacility.geom` - Spatial index on facility locations
+- GIST spatial index on `boundaries_county.geom` - Spatial index on county boundaries
+- Composite index on `services_emergencyfacility(type, created_at)` - For filtering and sorting
 
 ## Next Steps
 

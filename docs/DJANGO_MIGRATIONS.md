@@ -270,17 +270,9 @@ python manage.py migrate services 0003 --fake
 
 ## Data Migration Script
 
-A data migration script (`migrate_to_django.py`) is provided to help transition from old SQL-managed tables to new Django-managed tables.
+**Note**: The migration from SQL-managed tables to Django-managed tables has been completed. The migration script is no longer needed as all tables are now managed by Django migrations.
 
-**⚠️ Use with caution in production - always backup first!**
-
-```bash
-# Backup first!
-docker-compose exec db pg_dump -U postgres es_locator > backup.sql
-
-# Run migration script
-docker-compose exec web python migrate_to_django.py
-```
+If you need to migrate data from an old database structure, you would need to create a custom migration script or use Django's data migration framework.
 
 The script:
 1. Backs up data from old tables
