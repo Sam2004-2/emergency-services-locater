@@ -6,13 +6,14 @@ from django.db.models import QuerySet
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
-from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 
 from boundaries.models import County
 from .models import EmergencyFacility
+from .permissions import IsEditorOrReadOnly
 from .serializers import FacilityGeoSerializer
 from .validators import parse_positive_meters, validate_lat_lon
 
@@ -37,10 +38,20 @@ class FacilityViewSet(viewsets.ModelViewSet):
 
     queryset = EmergencyFacility.objects.all()
     serializer_class = FacilityGeoSerializer
-    permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     filterset_fields = ['type']
     ordering_fields = ['name', 'updated_at']
+    
+    def get_permissions(self):
+        """
+        Return appropriate permissions based on action.
+        
+        - Read operations (list, retrieve, spatial queries): Allow any
+        - Write operations (create, update, delete): Require Editor role
+        """
+        if self.action in ['create', 'update', 'partial_update', 'destroy']:
+            return [IsAuthenticated(), IsEditorOrReadOnly()]
+        return [AllowAny()]
 
     def _filtered_queryset(self) -> QuerySet:
         """
