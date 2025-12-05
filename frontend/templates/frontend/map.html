@@ -4,70 +4,133 @@
   <!-- Sidebar -->
   <aside class="es-sidebar" id="sidebar">
     <div class="es-sidebar-header">
-      <h2 class="es-sidebar-title">Filters</h2>
+      <h2 class="es-sidebar-title">Control Panel</h2>
       <button class="es-btn-icon es-btn-secondary d-lg-none" id="closeSidebar" aria-label="Close sidebar">
         <i class="bi bi-x-lg"></i>
       </button>
     </div>
     
+    <!-- Sidebar Tabs -->
+    <div class="es-sidebar-tabs">
+      <button class="es-tab-btn active" data-tab="filters-tab">
+        <i class="bi bi-sliders"></i> Filters
+      </button>
+      <button class="es-tab-btn" data-tab="incidents-tab">
+        <i class="bi bi-exclamation-triangle"></i> Incidents
+        <span class="es-badge es-badge-danger" id="incidentCount">0</span>
+      </button>
+    </div>
+    
     <div class="es-sidebar-body">
-      <form id="filters" aria-describedby="filterHelp">
-        <!-- Service Type -->
+      <!-- Filters Tab -->
+      <div class="es-tab-content active" id="filters-tab">
+        <form id="filters" aria-describedby="filterHelp">
+          <!-- Service Type -->
+          <div class="es-form-group">
+            <label for="type" class="es-form-label">Service Type</label>
+            <select id="type" class="es-form-control es-form-select">
+              <option value="">All Services</option>
+              <option value="hospital">Hospital</option>
+              <option value="fire_station">Fire Station</option>
+              <option value="police_station">Garda / Police</option>
+              <option value="ambulance_base">Ambulance Base</option>
+            </select>
+          </div>
+
+          <!-- Radius -->
+          <div class="es-form-group">
+            <label for="radius" class="es-form-label">Search Radius</label>
+            <div class="es-range-container">
+              <input type="range" id="radius" class="es-range" min="1" max="50" value="10">
+              <div class="es-range-labels">
+                <span>1 km</span>
+                <span>50 km</span>
+              </div>
+              <div class="es-range-value">
+                <output id="radiusOut" for="radius">10</output> km
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="es-form-group">
+            <label class="es-form-label">Actions</label>
+            <div class="es-btn-group">
+              <button id="locateBtn" type="button" class="es-btn es-btn-primary">
+                <i class="bi bi-crosshairs"></i>
+                <span>Locate</span>
+              </button>
+              <button id="nearestBtn" type="button" class="es-btn es-btn-secondary">
+                <i class="bi bi-geo-alt"></i>
+                <span>Nearest</span>
+              </button>
+            </div>
+            <button id="radiusBtn" type="button" class="es-btn es-btn-secondary w-100 mt-2">
+              <i class="bi bi-circle"></i>
+              <span>Search Within Radius</span>
+            </button>
+          </div>
+
+          <hr class="my-4" style="border-color: var(--es-border);">
+
+          <!-- Info Box -->
+          <div class="es-info-box">
+            <i class="bi bi-info-circle"></i>
+            <div>
+              <strong>Tip:</strong> Click any county on the map to view its facilities, or draw a polygon to query a custom area.
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Incidents Tab -->
+      <div class="es-tab-content" id="incidents-tab">
+        <!-- Incident Filters -->
         <div class="es-form-group">
-          <label for="type" class="es-form-label">Service Type</label>
-          <select id="type" class="es-form-control es-form-select">
-            <option value="">All Services</option>
-            <option value="hospital">Hospital</option>
-            <option value="fire_station">Fire Station</option>
-            <option value="police_station">Garda / Police</option>
-            <option value="ambulance_base">Ambulance Base</option>
+          <label class="es-form-label">Filter by Status</label>
+          <select id="incidentStatusFilter" class="es-form-control es-form-select">
+            <option value="">All Active</option>
+            <option value="pending">Pending</option>
+            <option value="dispatched">Dispatched</option>
+            <option value="en_route">En Route</option>
+            <option value="on_scene">On Scene</option>
+            <option value="resolved">Resolved</option>
           </select>
         </div>
-
-        <!-- Radius -->
+        
         <div class="es-form-group">
-          <label for="radius" class="es-form-label">Search Radius</label>
-          <div class="es-range-container">
-            <input type="range" id="radius" class="es-range" min="1" max="50" value="10">
-            <div class="es-range-labels">
-              <span>1 km</span>
-              <span>50 km</span>
-            </div>
-            <div class="es-range-value">
-              <output id="radiusOut" for="radius">10</output> km
-            </div>
-          </div>
+          <label class="es-form-label">Filter by Priority</label>
+          <select id="incidentPriorityFilter" class="es-form-control es-form-select">
+            <option value="">All Priorities</option>
+            <option value="critical">🔴 Critical</option>
+            <option value="high">🟠 High</option>
+            <option value="medium">🟡 Medium</option>
+            <option value="low">🟢 Low</option>
+          </select>
         </div>
-
-        <!-- Action Buttons -->
+        
         <div class="es-form-group">
-          <label class="es-form-label">Actions</label>
-          <div class="es-btn-group">
-            <button id="locateBtn" type="button" class="es-btn es-btn-primary">
-              <i class="bi bi-crosshairs"></i>
-              <span>Locate</span>
-            </button>
-            <button id="nearestBtn" type="button" class="es-btn es-btn-secondary">
-              <i class="bi bi-geo-alt"></i>
-              <span>Nearest</span>
-            </button>
-          </div>
-          <button id="radiusBtn" type="button" class="es-btn es-btn-secondary w-100 mt-2">
-            <i class="bi bi-circle"></i>
-            <span>Search Within Radius</span>
+          <button id="refreshIncidents" type="button" class="es-btn es-btn-primary w-100">
+            <i class="bi bi-arrow-clockwise"></i>
+            <span>Refresh Incidents</span>
           </button>
         </div>
-
-        <hr class="my-4" style="border-color: var(--es-border);">
-
-        <!-- Info Box -->
-        <div class="es-info-box">
-          <i class="bi bi-info-circle"></i>
-          <div>
-            <strong>Tip:</strong> Click any county on the map to view its facilities, or draw a polygon to query a custom area.
+        
+        <hr class="my-3" style="border-color: var(--es-border);">
+        
+        <!-- Incidents List -->
+        <div class="incident-panel">
+          <div class="incident-header">
+            <h3 class="incident-title">Active Incidents</h3>
+          </div>
+          <div class="incident-list" id="incidentList">
+            <div class="es-info-box">
+              <i class="bi bi-hourglass-split"></i>
+              <div>Loading incidents...</div>
+            </div>
           </div>
         </div>
-      </form>
+      </div>
     </div>
 
     <div class="es-sidebar-footer">
@@ -93,7 +156,7 @@
             <span>Live</span>
           </span>
         </div>
-        <p class="es-map-subtitle">Use the filters to keep the view focused. Everything is boxed in, clean, and easy to scan.</p>
+        <p class="es-map-subtitle">Real-time incident tracking and emergency services coordination.</p>
         <div class="es-map-actions">
           <button class="es-btn es-btn-ghost" id="openSidebar" aria-label="Open filters">
             <i class="bi bi-sliders"></i>
@@ -105,12 +168,12 @@
       </div>
       <div class="es-map-kpis">
         <div class="es-kpi">
-          <span class="es-kpi-label">Search mode</span>
-          <span class="es-kpi-value">Map + filters</span>
+          <span class="es-kpi-label">Active Incidents</span>
+          <span class="es-kpi-value" id="kpiIncidents">0</span>
         </div>
         <div class="es-kpi">
-          <span class="es-kpi-label">Coverage</span>
-          <span class="es-kpi-value">Hospitals, Garda, Fire, Ambulance</span>
+          <span class="es-kpi-label">Available Units</span>
+          <span class="es-kpi-value" id="kpiVehicles">0</span>
         </div>
       </div>
     </div>
@@ -137,6 +200,24 @@
           <span class="es-legend-dot ambulance_base"></span>
           <span>Ambulance Base</span>
         </div>
+        <hr style="border-color: var(--es-border); margin: 8px 0;">
+        <div class="es-legend-title">Incidents</div>
+        <div class="es-legend-item">
+          <span class="es-legend-dot" style="background: #dc3545;"></span>
+          <span>Critical</span>
+        </div>
+        <div class="es-legend-item">
+          <span class="es-legend-dot" style="background: #fd7e14;"></span>
+          <span>High Priority</span>
+        </div>
+        <div class="es-legend-item">
+          <span class="es-legend-dot" style="background: #ffc107;"></span>
+          <span>Medium</span>
+        </div>
+        <div class="es-legend-item">
+          <span class="es-legend-dot" style="background: #28a745;"></span>
+          <span>Low</span>
+        </div>
       </div>
 
       <!-- Status Bar -->
@@ -144,6 +225,25 @@
         <span class="es-status-indicator" id="statusIndicator"></span>
         <span id="statusText">Map ready. Click a county or use filters.</span>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- Incident Detail Modal -->
+<div class="incident-modal-overlay" id="incidentModal">
+  <div class="incident-modal">
+    <div class="incident-modal-header">
+      <h3>Incident Details</h3>
+      <button class="incident-modal-close" id="closeIncidentModal">&times;</button>
+    </div>
+    <div class="incident-modal-body" id="incidentModalBody">
+      <!-- Content loaded dynamically -->
+    </div>
+    <div class="incident-modal-footer">
+      <button class="es-btn es-btn-secondary" id="closeIncidentModalBtn">Close</button>
+      <button class="es-btn es-btn-primary" id="zoomToIncident">
+        <i class="bi bi-geo-alt"></i> Zoom to Location
+      </button>
     </div>
   </div>
 </div>
@@ -167,6 +267,39 @@
     openBtn?.addEventListener('click', openSidebar);
     closeBtn?.addEventListener('click', closeSidebar);
     backdrop?.addEventListener('click', closeSidebar);
+    
+    // Tab switching
+    const tabBtns = document.querySelectorAll('.es-tab-btn');
+    const tabContents = document.querySelectorAll('.es-tab-content');
+    
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const targetTab = btn.dataset.tab;
+        
+        // Remove active from all
+        tabBtns.forEach(b => b.classList.remove('active'));
+        tabContents.forEach(c => c.classList.remove('active'));
+        
+        // Add active to clicked
+        btn.classList.add('active');
+        document.getElementById(targetTab)?.classList.add('active');
+      });
+    });
+    
+    // Modal close handlers
+    const modal = document.getElementById('incidentModal');
+    const closeModal = document.getElementById('closeIncidentModal');
+    const closeModalBtn = document.getElementById('closeIncidentModalBtn');
+    
+    function hideModal() {
+      modal.classList.remove('active');
+    }
+    
+    closeModal?.addEventListener('click', hideModal);
+    closeModalBtn?.addEventListener('click', hideModal);
+    modal?.addEventListener('click', (e) => {
+      if (e.target === modal) hideModal();
+    });
   });
 </script>
 {% endblock %}

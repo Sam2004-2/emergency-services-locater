@@ -41,10 +41,10 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'rest_framework',
     'django_filters',
-    'core',
+    'channels',
     'accounts',
-    'boundaries',
-    'services',
+    'facilities',
+    'incidents',
     'frontend',
 ]
 
@@ -77,6 +77,23 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'es_locator.wsgi.application'
+ASGI_APPLICATION = 'es_locator.asgi.application'
+
+# Django Channels configuration
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [(os.getenv('REDIS_HOST', 'redis'), int(os.getenv('REDIS_PORT', 6379)))],
+        },
+    } if os.getenv('REDIS_HOST') else {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
+
+# OSRM Routing configuration
+OSRM_URL = os.getenv('OSRM_URL', 'https://router.project-osrm.org')
+ROUTING_TIMEOUT = int(os.getenv('ROUTING_TIMEOUT', '10'))
 
 
 # Database
@@ -130,7 +147,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+
+# Only include static directory if it exists (for local development)
+_static_dir = BASE_DIR / 'static'
+STATICFILES_DIRS = [_static_dir] if _static_dir.exists() else []
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

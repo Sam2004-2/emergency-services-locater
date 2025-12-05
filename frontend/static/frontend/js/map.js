@@ -1,5 +1,6 @@
 import API from './api.js';
 import { icons, getIconForType } from './icons.js';
+import { IncidentManager } from './incidents.js';
 
 /**
  * Emergency Services Locator - Map Module
@@ -15,6 +16,7 @@ const state = {
   userMarker: null,
   radiusOverlay: null,
   performanceMarks: {},
+  incidentManager: null,
 };
 
 // Performance instrumentation
@@ -455,6 +457,10 @@ function initMap() {
   setupDrawTools();
   setupEvents();
   loadCounties();
+  
+  // Initialize incident manager
+  state.incidentManager = new IncidentManager(state.map);
+  window.incidentManager = state.incidentManager;  // Expose for popup buttons
   
   perf.measure('map-initialized', 'map-init-start');
 }
