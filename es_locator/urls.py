@@ -3,7 +3,7 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
 from accounts.urls import api_urlpatterns as accounts_api_urls
-from accounts.views import CustomLogoutView
+from accounts.views import CustomLogoutView, logout_to_home
 from boundaries.api import CountyViewSet
 from services.api import FacilityViewSet
 
@@ -12,7 +12,8 @@ router.register(r'facilities', FacilityViewSet, basename='facility')
 router.register(r'counties', CountyViewSet, basename='county')
 
 urlpatterns = [
-    path('admin/logout/', CustomLogoutView.as_view(), name='admin-logout'),
+    # Force admin logout to use our redirect-to-home view (avoids admin login redirect)
+    path('admin/logout/', logout_to_home, name='admin-logout'),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
     path('api/', include(accounts_api_urls)),

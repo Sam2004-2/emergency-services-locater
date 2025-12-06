@@ -4,8 +4,9 @@ Authentication views and API endpoints.
 Provides login/logout views and an API endpoint for retrieving
 the current user's information and role.
 """
+from django.contrib.auth import logout
 from django.contrib.auth.views import LoginView, LogoutView
-from django.shortcuts import resolve_url
+from django.shortcuts import redirect, resolve_url
 from django.urls import reverse_lazy
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -82,6 +83,12 @@ class CustomLogoutView(LogoutView):
     def get_next_page(self):
         """Always send users back to the public home page."""
         return resolve_url(self.next_page or reverse_lazy('home'))
+
+
+def logout_to_home(request):
+    """Force logout then redirect to home (used for admin/logout override)."""
+    logout(request)
+    return redirect('home')
 
 
 class CurrentUserAPIView(APIView):
