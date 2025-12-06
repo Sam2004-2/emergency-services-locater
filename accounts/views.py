@@ -71,7 +71,11 @@ class CustomLoginView(LoginView):
 
 
 class CustomLogoutView(LogoutView):
-    """Logout view that redirects to home page."""
+    """
+    Logout view that allows GET (Django 5 defaults to POST-only).
+    Keeps redirect to home page after logout.
+    """
+    http_method_names = ["get", "post", "head", "options"]
     next_page = reverse_lazy('home')
 
 

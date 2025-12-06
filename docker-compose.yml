@@ -60,7 +60,7 @@ services:
       DB_USER: ${POSTGRES_USER:-postgres}
       DB_PASS: ${POSTGRES_PASSWORD:-postgres}
       DB_NAME: ${POSTGRES_DB:-es_locator}
-      DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-localhost,127.0.0.1}
       REDIS_HOST: redis
       REDIS_PORT: 6379
       WORKERS: ${WORKERS:-3}
