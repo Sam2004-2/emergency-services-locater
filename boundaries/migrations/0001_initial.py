@@ -15,18 +15,18 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name='County',
             fields=[
-                ('id', models.IntegerField(primary_key=True, serialize=False)),
-                ('source_id', models.TextField(blank=True, null=True)),
-                ('name_en', models.TextField()),
-                ('name_local', models.TextField(blank=True, null=True)),
-                ('iso_code', models.TextField(blank=True, null=True)),
-                ('geom', django.contrib.gis.db.models.fields.MultiPolygonField(srid=4326)),
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('source_id', models.CharField(blank=True, help_text='Original source identifier', max_length=100, null=True)),
+                ('name_en', models.CharField(db_index=True, help_text='County name in English', max_length=100)),
+                ('name_local', models.CharField(blank=True, help_text='County name in local language', max_length=100, null=True)),
+                ('iso_code', models.CharField(blank=True, help_text='ISO 3166-2 code', max_length=10, null=True, unique=True)),
+                ('geom', django.contrib.gis.db.models.fields.MultiPolygonField(help_text='County boundary (WGS84)', srid=4326)),
             ],
             options={
                 'verbose_name': 'County',
                 'verbose_name_plural': 'Counties',
-                'db_table': 'admin_counties',
-                'managed': False,
+                'db_table': 'boundaries_county',
+                'ordering': ['name_en'],
             },
         ),
     ]

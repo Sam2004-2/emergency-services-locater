@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2732" height="2732" viewBox="0 0 2732 2732">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0077B6"/>
+      <stop offset="100%" style="stop-color:#023E8A"/>
+    </linearGradient>
+  </defs>
+  <rect width="2732" height="2732" fill="url(#grad)"/>
+  <text x="50%" y="45%" text-anchor="middle" fill="white" font-size="200" font-family="Arial, sans-serif" font-weight="bold">ES Locator</text>
+  <text x="50%" y="55%" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="80" font-family="Arial, sans-serif">Emergency Services</text>
+</svg>

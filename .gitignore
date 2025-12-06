@@ -151,3 +151,6 @@ docs/_templates/
 local_config.py
 secrets.yaml
 credentials.json
+
+# Azure deployment secrets (contains sensitive credentials)
+azure/container-app.yaml

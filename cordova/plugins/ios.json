@@ -1,0 +1,31 @@
+{
+  "prepare_queue": {
+    "installed": [],
+    "uninstalled": []
+  },
+  "config_munge": {
+    "files": {}
+  },
+  "installed_plugins": {
+    "cordova-plugin-device": {
+      "PACKAGE_NAME": "com.eslocator.app"
+    },
+    "cordova-plugin-geolocation": {
+      "GPS_REQUIRED": "true",
+      "PACKAGE_NAME": "com.eslocator.app"
+    },
+    "cordova-plugin-network-information": {
+      "PACKAGE_NAME": "com.eslocator.app"
+    },
+    "cordova-plugin-statusbar": {
+      "PACKAGE_NAME": "com.eslocator.app"
+    },
+    "cordova-plugin-splashscreen": {
+      "PACKAGE_NAME": "com.eslocator.app"
+    },
+    "cordova-plugin-whitelist": {
+      "PACKAGE_NAME": "com.eslocator.app"
+    }
+  },
+  "dependent_plugins": {}
+}
