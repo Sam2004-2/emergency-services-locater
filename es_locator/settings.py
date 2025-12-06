@@ -1,26 +1,20 @@
 import os
 from pathlib import Path
 
-
 from dotenv import load_dotenv
 
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 load_dotenv()
 
-# GDAL/GEOS Library Paths (only for local macOS development, not in Docker)
-# Docker containers have GDAL/GEOS installed system-wide
-# Only set these paths if we're NOT in a Docker container (detected by /app workdir)
+# GDAL/GEOS library paths for local macOS development (not needed in Docker)
 if not os.path.exists("/app"):
-    # Running on local macOS with Homebrew
-    if os.getenv("GDAL_LIBRARY_PATH"):
-        GDAL_LIBRARY_PATH = os.getenv("GDAL_LIBRARY_PATH")
-    if os.getenv("GEOS_LIBRARY_PATH"):
-        GEOS_LIBRARY_PATH = os.getenv("GEOS_LIBRARY_PATH")
+    gdal_path = os.getenv("GDAL_LIBRARY_PATH")
+    geos_path = os.getenv("GEOS_LIBRARY_PATH")
+    if gdal_path:
+        GDAL_LIBRARY_PATH = gdal_path
+    if geos_path:
+        GEOS_LIBRARY_PATH = geos_path
 
-# Security & environment configuration
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "True") == "True"
 ALLOWED_HOSTS = os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
@@ -43,6 +37,8 @@ INSTALLED_APPS = [
     'django_filters',
     'core',
     'boundaries',
+    'accounts',
+    'incidents',
     'services',
     'frontend',
 ]
@@ -92,10 +88,6 @@ DATABASES = {
     }
 }
 
-
-# Password validation
-# https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -111,10 +103,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
-# Internationalization
-# https://docs.djangoproject.com/en/4.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = 'UTC'
@@ -123,18 +111,16 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Authentication
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/dashboard/'
+LOGOUT_REDIRECT_URL = '/'
 
 
 REST_FRAMEWORK = {

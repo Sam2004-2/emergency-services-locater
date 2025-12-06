@@ -1,28 +1,31 @@
+/* Map-specific layout and styling */
+
 #map {
   height: calc(100vh - 8rem);
   min-height: 480px;
 }
 
 .leaflet-container:focus {
-  outline: 3px solid #0d6efd;
+  outline: var(--focus-ring-width) solid var(--focus-ring-color);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .marker-hospital {
   filter: saturate(1.2);
 }
 
-/* County tooltip styling */
+/* County tooltip - neutral styling for theme independence */
 .county-tooltip {
-  background-color: rgba(13, 110, 253, 0.9);
-  border: 2px solid #0d6efd;
-  border-radius: 6px;
-  color: white;
-  font-weight: 600;
-  font-size: 14px;
-  padding: 6px 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  background-color: var(--map-tooltip-bg);
+  border: 2px solid var(--map-county-border);
+  border-radius: var(--radius-md);
+  color: var(--map-tooltip-text);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  box-shadow: var(--shadow-md);
 }
 
 .county-tooltip::before {
-  border-top-color: #0d6efd;
+  border-top-color: var(--map-county-border);
 }

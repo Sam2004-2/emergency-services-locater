@@ -1,0 +1,246 @@
+{% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - Emergency Services Locator{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'frontend/css/dashboard.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+  <div class="dashboard-grid">
+    <!-- Left Sidebar -->
+    <aside class="dashboard-sidebar">
+      <div class="card shadow-sm h-100">
+        <div class="card-body">
+          <div class="user-info mb-4">
+            <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
+            <p class="text-muted mb-0">
+              <span class="badge bg-primary">{{ user.profile.get_role_display|default:"Viewer" }}</span>
+            </p>
+          </div>
+
+          <div class="quick-stats mb-4">
+            <h6 class="text-muted mb-3">Quick Stats</h6>
+            <div class="stat-item mb-2">
+              <span class="stat-label">Active Incidents</span>
+              <span class="stat-value badge bg-danger" id="activeCount">-</span>
+            </div>
+            <div class="stat-item mb-2">
+              <span class="stat-label">Available Vehicles</span>
+              <span class="stat-value badge bg-success" id="vehicleCount">-</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">On Scene</span>
+              <span class="stat-value badge bg-warning" id="onSceneCount">-</span>
+            </div>
+          </div>
+
+          <div class="filters mb-4">
+            <h6 class="text-muted mb-3">Filters</h6>
+            <div class="mb-3">
+              <label for="filterStatus" class="form-label small">Status</label>
+              <select id="filterStatus" class="form-select form-select-sm">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="dispatched">Dispatched</option>
+                <option value="en_route">En Route</option>
+                <option value="on_scene">On Scene</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="filterSeverity" class="form-label small">Severity</label>
+              <select id="filterSeverity" class="form-select form-select-sm">
+                <option value="">All Severities</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label for="filterType" class="form-label small">Type</label>
+              <select id="filterType" class="form-select form-select-sm">
+                <option value="">All Types</option>
+                <option value="fire">Fire</option>
+                <option value="medical">Medical</option>
+                <option value="crime">Crime</option>
+                <option value="accident">Accident</option>
+              </select>
+            </div>
+          </div>
+
+          {% if user.profile.is_dispatcher %}
+          <div class="actions">
+            <button id="createIncidentBtn" class="btn btn-primary w-100 mb-2">
+              <i class="bi bi-plus-circle"></i> Create Incident
+            </button>
+          </div>
+          {% endif %}
+
+          <div class="mt-4">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
+              <label class="form-check-label small" for="autoRefresh">
+                Auto-refresh (15s)
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center Map -->
+    <div class="dashboard-map">
+      <div id="map" class="map-container" role="application" aria-label="Interactive incident map"></div>
+    </div>
+
+    <!-- Right Panel -->
+    <aside class="dashboard-panel">
+      <div class="card shadow-sm h-100">
+        <div class="card-header bg-white border-bottom">
+          <ul class="nav nav-tabs card-header-tabs" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="incidents-tab" data-bs-toggle="tab" data-bs-target="#incidents-panel" type="button" role="tab">
+                Incidents
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="detail-tab" data-bs-toggle="tab" data-bs-target="#detail-panel" type="button" role="tab">
+                Details
+              </button>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body p-0">
+          <div class="tab-content h-100">
+            <!-- Incidents List -->
+            <div class="tab-pane fade show active h-100" id="incidents-panel" role="tabpanel">
+              <div id="incidentsList" class="incident-list">
+                <div class="text-center text-muted p-4">
+                  <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading incidents...</span>
+                  </div>
+                  <p class="mt-2">Loading incidents...</p>
+                </div>
+              </div>
+            </div>
+            <!-- Incident Detail -->
+            <div class="tab-pane fade h-100" id="detail-panel" role="tabpanel">
+              <div id="incidentDetail" class="incident-detail p-3">
+                <div class="text-center text-muted p-4">
+                  Select an incident to view details
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- Create Incident Modal -->
+<div class="modal fade" id="createIncidentModal" tabindex="-1" aria-labelledby="createIncidentModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createIncidentModalLabel">Create New Incident</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="createIncidentForm">
+          <div class="mb-3">
+            <label for="incidentTitle" class="form-label">Title *</label>
+            <input type="text" class="form-control" id="incidentTitle" required>
+          </div>
+          <div class="mb-3">
+            <label for="incidentDescription" class="form-label">Description</label>
+            <textarea class="form-control" id="incidentDescription" rows="3"></textarea>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="incidentType" class="form-label">Type *</label>
+              <select class="form-select" id="incidentType" required>
+                <option value="">Select type</option>
+                <option value="fire">Fire</option>
+                <option value="medical">Medical</option>
+                <option value="crime">Crime</option>
+                <option value="accident">Accident</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="incidentSeverity" class="form-label">Severity *</label>
+              <select class="form-select" id="incidentSeverity" required>
+                <option value="low">Low</option>
+                <option value="medium" selected>Medium</option>
+                <option value="high">High</option>
+                <option value="critical">Critical</option>
+              </select>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="incidentAddress" class="form-label">Address *</label>
+            <input type="text" class="form-control" id="incidentAddress" required>
+          </div>
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="incidentLat" class="form-label">Latitude *</label>
+              <input type="number" step="0.000001" class="form-control" id="incidentLat" required>
+            </div>
+            <div class="col-md-6">
+              <label for="incidentLng" class="form-label">Longitude *</label>
+              <input type="number" step="0.000001" class="form-control" id="incidentLng" required>
+            </div>
+          </div>
+          <div class="alert alert-info small mb-0">
+            <i class="bi bi-info-circle"></i> Click on the map to set coordinates
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="submitIncident">Create Incident</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Dispatch Modal -->
+<div class="modal fade" id="dispatchModal" tabindex="-1" aria-labelledby="dispatchModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="dispatchModalLabel">Dispatch Vehicle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="dispatchIncidentInfo" class="mb-3"></div>
+        <form id="dispatchForm">
+          <div class="mb-3">
+            <label for="dispatchVehicle" class="form-label">Select Vehicle *</label>
+            <select class="form-select" id="dispatchVehicle" required>
+              <option value="">Loading vehicles...</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="dispatchResponder" class="form-label">Assign Responder (Optional)</label>
+            <select class="form-select" id="dispatchResponder">
+              <option value="">None</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="submitDispatch">Dispatch</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'frontend/js/dashboard/dashboard.js' %}" type="module"></script>
+{% endblock %}

@@ -30,6 +30,18 @@ services:
       retries: 10
     networks: [esnet]
 
+  redis:
+    image: redis:7-alpine
+    container_name: es_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [esnet]
+
   web:
     build:
       context: .
@@ -38,15 +50,27 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     env_file: .env
     environment:
       DJANGO_DEBUG: "False"
       DB_HOST: db
       DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER:-postgres}
+      DB_PASS: ${POSTGRES_PASSWORD:-postgres}
+      DB_NAME: ${POSTGRES_DB:-es_locator}
       DJANGO_ALLOWED_HOSTS: "localhost,127.0.0.1"
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       WORKERS: ${WORKERS:-3}
       TIMEOUT: ${TIMEOUT:-60}
     command: ["/bin/sh", "-c", "/app/docker/web/entrypoint.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/facilities/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     volumes:
       - staticfiles:/app/staticfiles
       - ./:/workspace:ro
@@ -68,6 +92,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4:8
     container_name: es_pgadmin
+    profiles: ["debug"]
     depends_on:
       - db
     environment:
