@@ -5,13 +5,14 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     CurrentUserAPIView,
     CustomLoginView,
-    CustomLogoutView,
     CustomTokenObtainPairView,
+    logout_to_home,
 )
 
 urlpatterns = [
     path('login/', CustomLoginView.as_view(), name='login'),
-    path('logout/', CustomLogoutView.as_view(), name='logout'),
+    # Force logout to always redirect to home (no confirmation page)
+    path('logout/', logout_to_home, name='logout'),
 ]
 
 # API URLs (to be included under /api/)
