@@ -50,7 +50,7 @@ export function renderIncidentsList() {
 
   // Add click handlers
   sorted.forEach(incident => {
-    const card = document.getElementById(`incident-${incident.properties.id}`);
+    const card = document.getElementById(`incident-${incident.id}`);
     if (card) {
       card.addEventListener('click', () => {
         DashboardState.selectIncident(incident);
@@ -69,13 +69,14 @@ export function renderIncidentsList() {
  */
 function renderIncidentCard(incident) {
   const props = incident.properties;
-  const isSelected = DashboardState.selectedIncident?.properties.id === props.id;
+  const incidentId = incident.id;
+  const isSelected = DashboardState.selectedIncident?.id === incidentId;
   
   const timeAgo = getTimeAgo(new Date(props.created_at));
 
   return `
     <div 
-      id="incident-${props.id}"
+      id="incident-${incidentId}"
       class="incident-card ${isSelected ? 'selected' : ''}"
       role="button"
       tabindex="0"
@@ -185,7 +186,7 @@ export function renderIncidentDetail() {
         ${canDispatch && props.status === 'pending' ? `
           <button 
             class="btn btn-primary w-100 mb-2" 
-            onclick="window.dashboardActions.openDispatchModal(${props.id})"
+            onclick="window.dashboardActions.openDispatchModal(${incident.id})"
           >
             <i class="bi bi-send"></i> Dispatch Vehicle
           </button>
@@ -196,7 +197,7 @@ export function renderIncidentDetail() {
             ${props.status !== 'en_route' ? `
               <button 
                 class="btn btn-sm btn-outline-primary" 
-                onclick="window.dashboardActions.updateStatus(${props.id}, 'en_route')"
+                onclick="window.dashboardActions.updateStatus(${incident.id}, 'en_route')"
               >
                 En Route
               </button>
@@ -204,14 +205,14 @@ export function renderIncidentDetail() {
             ${props.status !== 'on_scene' ? `
               <button 
                 class="btn btn-sm btn-outline-warning" 
-                onclick="window.dashboardActions.updateStatus(${props.id}, 'on_scene')"
+                onclick="window.dashboardActions.updateStatus(${incident.id}, 'on_scene')"
               >
                 On Scene
               </button>
             ` : ''}
             <button 
               class="btn btn-sm btn-outline-success" 
-              onclick="window.dashboardActions.updateStatus(${props.id}, 'resolved')"
+              onclick="window.dashboardActions.updateStatus(${incident.id}, 'resolved')"
             >
               Resolve
             </button>
@@ -220,7 +221,7 @@ export function renderIncidentDetail() {
 
         <button 
           class="btn btn-outline-secondary btn-sm w-100" 
-          onclick="window.dashboardActions.focusOnMap(${props.id})"
+          onclick="window.dashboardActions.focusOnMap(${incident.id})"
         >
           <i class="bi bi-geo-alt"></i> Show on Map
         </button>

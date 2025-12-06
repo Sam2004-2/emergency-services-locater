@@ -141,6 +141,12 @@ export async function openDispatchModal(incidentId) {
     `;
   }
 
+  // Clear route preview info
+  const routePreviewEl = document.getElementById('routePreviewInfo');
+  if (routePreviewEl) {
+    routePreviewEl.innerHTML = '';
+  }
+
   // Load available vehicles
   try {
     const vehicleSelect = document.getElementById('dispatchVehicle');
@@ -151,8 +157,13 @@ export async function openDispatchModal(incidentId) {
     if (vehicles.features && vehicles.features.length > 0) {
       vehicleSelect.innerHTML = '<option value="">Select a vehicle</option>' +
         vehicles.features.map(v => 
-          `<option value="${v.properties.id}">${v.properties.callsign} - ${v.properties.vehicle_type_display}</option>`
+          `<option value="${v.id}">${v.properties.callsign} - ${v.properties.vehicle_type_display}</option>`
         ).join('');
+      
+      // Add change handler for route preview
+      vehicleSelect.onchange = async function() {
+        await previewRouteForVehicle(incidentId, this.value);
+      };
     } else {
       vehicleSelect.innerHTML = '<option value="">No vehicles available</option>';
     }
@@ -160,10 +171,67 @@ export async function openDispatchModal(incidentId) {
     // Store incident ID on modal
     modal._incidentId = incidentId;
     
+    // Clean up preview on modal close
+    document.getElementById('dispatchModal').addEventListener('hidden.bs.modal', () => {
+      if (window.dashboardActions && window.dashboardActions.cancelPreviewRoute) {
+        window.dashboardActions.cancelPreviewRoute();
+      }
+    }, { once: true });
+    
     modal.show();
   } catch (error) {
     console.error('Failed to load vehicles:', error);
     showNotification('Failed to load vehicles', 'danger');
+  }
+}
+
+/**
+ * Preview route for selected vehicle
+ */
+async function previewRouteForVehicle(incidentId, vehicleId) {
+  const routePreviewEl = document.getElementById('routePreviewInfo');
+  
+  if (!vehicleId) {
+    if (routePreviewEl) routePreviewEl.innerHTML = '';
+    if (window.dashboardActions && window.dashboardActions.cancelPreviewRoute) {
+      window.dashboardActions.cancelPreviewRoute();
+    }
+    return;
+  }
+  
+  if (routePreviewEl) {
+    routePreviewEl.innerHTML = '<div class="text-muted small"><i class="bi bi-hourglass-split"></i> Calculating route...</div>';
+  }
+  
+  try {
+    const routeData = await DashboardAPI.getRoutePreview(incidentId, vehicleId);
+    
+    if (routePreviewEl) {
+      routePreviewEl.innerHTML = `
+        <div class="alert alert-info py-2 mb-2">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <strong><i class="bi bi-signpost-2"></i> Route Preview</strong>
+            </div>
+            <div class="text-end">
+              <span class="badge bg-primary">${routeData.distance_display}</span>
+              <span class="badge bg-success"><i class="bi bi-clock"></i> ${routeData.duration_display}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Draw preview on map
+    if (window.dashboardActions && window.dashboardActions.previewRoute) {
+      window.dashboardActions.previewRoute(incidentId, vehicleId);
+    }
+    
+  } catch (error) {
+    console.error('Failed to get route preview:', error);
+    if (routePreviewEl) {
+      routePreviewEl.innerHTML = '<div class="text-warning small"><i class="bi bi-exclamation-triangle"></i> Could not calculate route</div>';
+    }
   }
 }
 

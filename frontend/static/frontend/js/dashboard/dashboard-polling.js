@@ -74,15 +74,17 @@ function extractFeatures(response) {
  */
 async function poll() {
   try {
-    // Fetch incidents and vehicles in parallel
-    const [incidents, vehicles] = await Promise.all([
+    // Fetch incidents, vehicles, and active routes in parallel
+    const [incidents, vehicles, activeRoutesResponse] = await Promise.all([
       DashboardAPI.getActiveIncidents(),
-      DashboardAPI.getVehicles()
+      DashboardAPI.getVehicles(),
+      DashboardAPI.getActiveRoutes().catch(() => ({ routes: [] }))  // Don't fail if routes unavailable
     ]);
 
     // Update state - handle various response formats
     DashboardState.setIncidents(extractFeatures(incidents));
     DashboardState.setVehicles(extractFeatures(vehicles));
+    DashboardState.setActiveRoutes(activeRoutesResponse.routes || []);
   } catch (error) {
     console.error('Polling error:', error);
     // Don't stop polling on error, just log it

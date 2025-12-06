@@ -13,7 +13,7 @@ from django.contrib.gis.geos import LineString, Point
 logger = logging.getLogger(__name__)
 
 OSRM_BASE_URL = "https://router.project-osrm.org/route/v1/driving"
-REQUEST_TIMEOUT = 10  # seconds
+REQUEST_TIMEOUT = 30  # seconds (increased for demo server reliability)
 
 
 class OSRMService:

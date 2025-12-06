@@ -6,7 +6,7 @@
 
 import { DashboardAPI } from './dashboard-api.js';
 import { DashboardState } from './dashboard-state.js';
-import { initMap, renderIncidents, renderVehicles, focusIncident, drawRoute, clearRoute } from './dashboard-map.js';
+import { initMap, renderIncidents, renderVehicles, focusIncident, drawRoute, clearRoute, renderActiveRoutes, drawPreviewRoute, clearPreviewRoute } from './dashboard-map.js';
 import { renderIncidentsList, renderIncidentDetail, updateStats } from './dashboard-list.js';
 import { startPolling, stopPolling, pollNow } from './dashboard-polling.js';
 import { initForms, openDispatchModal, showNotification } from './dashboard-forms.js';
@@ -59,6 +59,11 @@ function setupStateListeners() {
     updateStats();
   });
 
+  // Listen for active routes changes
+  DashboardState.addListener('activeRoutes', () => {
+    renderActiveRoutes(DashboardState.activeRoutes);
+  });
+
   // Listen for selected incident changes
   DashboardState.addListener('selectedIncident', () => {
     renderIncidentDetail();
@@ -69,7 +74,7 @@ function setupStateListeners() {
       focusIncident(incident);
       
       // Draw route if available
-      if (incident.properties.route_geometry) {
+      if (incident.properties && incident.properties.route_geometry) {
         drawRoute(incident.properties.route_geometry);
       } else {
         clearRoute();
@@ -85,6 +90,27 @@ function setupStateListeners() {
     renderIncidents(filtered);
     renderIncidentsList();
   });
+}
+
+/**
+ * Preview route from vehicle to incident
+ */
+async function previewRoute(incidentId, vehicleId) {
+  try {
+    const routeData = await DashboardAPI.getRoutePreview(incidentId, vehicleId);
+    drawPreviewRoute(routeData.geometry, routeData.distance_display, routeData.duration_display);
+    return routeData;
+  } catch (error) {
+    console.error('Failed to preview route:', error);
+    return null;
+  }
+}
+
+/**
+ * Clear route preview
+ */
+function cancelPreviewRoute() {
+  clearPreviewRoute();
 }
 
 /**
@@ -131,7 +157,9 @@ const pollingManager = {
 window.dashboardActions = {
   updateStatus,
   focusOnMap,
-  openDispatchModal
+  openDispatchModal,
+  previewRoute,
+  cancelPreviewRoute
 };
 
 window.dashboardPolling = pollingManager;

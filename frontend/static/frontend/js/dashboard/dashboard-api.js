@@ -131,6 +131,32 @@ export const DashboardAPI = {
   },
 
   /**
+   * Get route preview from vehicle to incident (before dispatching)
+   */
+  async getRoutePreview(incidentId, vehicleId) {
+    const response = await fetch(`${API_BASE}/incidents/${incidentId}/route_preview/?vehicle_id=${vehicleId}`, {
+      headers: {
+        'X-CSRFToken': getCSRFToken()
+      }
+    });
+    if (!response.ok) throw new Error('Failed to get route preview');
+    return response.json();
+  },
+
+  /**
+   * Get all active routes (dispatched vehicles with routes)
+   */
+  async getActiveRoutes() {
+    const response = await fetch(`${API_BASE}/incidents/active_routes/`, {
+      headers: {
+        'X-CSRFToken': getCSRFToken()
+      }
+    });
+    if (!response.ok) throw new Error('Failed to fetch active routes');
+    return response.json();
+  },
+
+  /**
    * Fetch all vehicles
    */
   async getVehicles(filters = {}) {

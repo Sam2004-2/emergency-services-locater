@@ -95,6 +95,87 @@ class IncidentViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['get'])
+    def active_routes(self, request):
+        """
+        Get all active incidents with their routes for live display.
+
+        GET /api/incidents/active_routes/
+        Returns incidents that have route_geometry (dispatched vehicles en route)
+        """
+        queryset = self.get_queryset().filter(
+            status__in=['dispatched', 'en_route'],
+            route_geometry__isnull=False
+        )
+        
+        routes = []
+        for incident in queryset:
+            routes.append({
+                'incident_id': incident.id,
+                'incident_title': incident.title,
+                'severity': incident.severity,
+                'status': incident.status,
+                'route_geometry': {
+                    'type': 'LineString',
+                    'coordinates': list(incident.route_geometry.coords)
+                } if incident.route_geometry else None,
+                'route_distance_m': incident.route_distance_m,
+                'route_duration_s': incident.route_duration_s,
+                'incident_location': {
+                    'type': 'Point',
+                    'coordinates': [incident.location.x, incident.location.y]
+                }
+            })
+        
+        return Response({'routes': routes})
+
+    @action(detail=True, methods=['get'], url_path='route_preview')
+    def route_preview(self, request, pk=None):
+        """
+        Preview route from a vehicle to this incident.
+
+        GET /api/incidents/{id}/route_preview/?vehicle_id=X
+        Returns the route that would be used if the vehicle is dispatched.
+        """
+        incident = self.get_object()
+        vehicle_id = request.query_params.get('vehicle_id')
+
+        if not vehicle_id:
+            return Response(
+                {'error': 'vehicle_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            vehicle = Vehicle.objects.get(id=vehicle_id)
+        except Vehicle.DoesNotExist:
+            return Response(
+                {'error': 'Vehicle not found'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        route_data = OSRMService.get_route(vehicle.current_position, incident.location)
+
+        if not route_data:
+            return Response(
+                {'error': 'Could not calculate route'},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        return Response({
+            'vehicle_id': vehicle.id,
+            'vehicle_callsign': vehicle.callsign,
+            'incident_id': incident.id,
+            'geometry': {
+                'type': 'LineString',
+                'coordinates': list(route_data['geometry'].coords)
+            },
+            'distance_m': route_data['distance'],
+            'duration_s': route_data['duration'],
+            'distance_display': OSRMService.format_distance(route_data['distance']),
+            'duration_display': OSRMService.format_duration(route_data['duration'])
+        })
+
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, IsDispatcher], url_path='dispatch', url_name='dispatch')
     def dispatch_vehicle(self, request, pk=None):
         """

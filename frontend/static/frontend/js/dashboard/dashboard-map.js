@@ -10,6 +10,8 @@ let map;
 let incidentMarkers;
 let vehicleMarkers;
 let routeLayer;
+let activeRoutesLayer;
+let previewRouteLayer;
 
 const SEVERITY_COLORS = {
   critical: '#dc3545',
@@ -22,13 +24,16 @@ const INCIDENT_ICONS = {
   fire: '🔥',
   medical: '🚑',
   crime: '🚔',
-  accident: '🚗'
+  accident: '🚗',
+  traffic: '🚗'
 };
 
 const VEHICLE_ICONS = {
   ambulance: '🚑',
   fire_engine: '🚒',
+  fire: '🚒',
   police_car: '🚔',
+  garda: '🚔',
   helicopter: '🚁'
 };
 
@@ -50,6 +55,8 @@ export function initMap() {
   incidentMarkers = L.layerGroup().addTo(map);
   vehicleMarkers = L.layerGroup().addTo(map);
   routeLayer = L.layerGroup().addTo(map);
+  activeRoutesLayer = L.layerGroup().addTo(map);
+  previewRouteLayer = L.layerGroup().addTo(map);
 
   // Add click handler for creating incidents
   map.on('click', handleMapClick);
@@ -171,7 +178,7 @@ export function renderVehicles(vehicles) {
 }
 
 /**
- * Draw route on map
+ * Draw route on map (for selected incident)
  */
 export function drawRoute(routeGeometry, color = '#0d6efd') {
   routeLayer.clearLayers();
@@ -182,12 +189,49 @@ export function drawRoute(routeGeometry, color = '#0d6efd') {
   
   const polyline = L.polyline(coords, {
     color: color,
-    weight: 4,
-    opacity: 0.7,
-    dashArray: '10, 5'
+    weight: 5,
+    opacity: 0.8,
+    lineCap: 'round',
+    lineJoin: 'round'
   });
 
+  // Add animated dash effect for active routes
+  const animatedPolyline = L.polyline(coords, {
+    color: 'white',
+    weight: 5,
+    opacity: 0.4,
+    dashArray: '10, 20',
+    lineCap: 'round',
+    lineJoin: 'round'
+  });
+
+  animatedPolyline.addTo(routeLayer);
   polyline.addTo(routeLayer);
+  
+  // Add start/end markers
+  if (coords.length >= 2) {
+    const startPoint = coords[0];
+    const endPoint = coords[coords.length - 1];
+    
+    // Vehicle start marker
+    L.circleMarker(startPoint, {
+      radius: 8,
+      fillColor: '#28a745',
+      color: 'white',
+      weight: 2,
+      fillOpacity: 1
+    }).bindPopup('Vehicle Location').addTo(routeLayer);
+    
+    // Incident end marker
+    L.circleMarker(endPoint, {
+      radius: 8,
+      fillColor: color,
+      color: 'white',
+      weight: 2,
+      fillOpacity: 1
+    }).bindPopup('Incident Location').addTo(routeLayer);
+  }
+
   map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
 }
 
@@ -196,6 +240,96 @@ export function drawRoute(routeGeometry, color = '#0d6efd') {
  */
 export function clearRoute() {
   routeLayer.clearLayers();
+}
+
+/**
+ * Draw preview route (when hovering/selecting vehicle for dispatch)
+ */
+export function drawPreviewRoute(routeGeometry, distanceDisplay, durationDisplay) {
+  previewRouteLayer.clearLayers();
+
+  if (!routeGeometry || !routeGeometry.coordinates) return;
+
+  const coords = routeGeometry.coordinates.map(([lng, lat]) => [lat, lng]);
+  
+  const polyline = L.polyline(coords, {
+    color: '#6c757d',
+    weight: 4,
+    opacity: 0.6,
+    dashArray: '5, 10'
+  });
+
+  polyline.addTo(previewRouteLayer);
+  
+  // Add info popup at midpoint
+  if (coords.length >= 2) {
+    const midIndex = Math.floor(coords.length / 2);
+    const midPoint = coords[midIndex];
+    
+    L.popup()
+      .setLatLng(midPoint)
+      .setContent(`
+        <div class="text-center">
+          <strong>Route Preview</strong><br>
+          <span class="text-muted">Distance:</span> ${distanceDisplay}<br>
+          <span class="text-muted">ETA:</span> ${durationDisplay}
+        </div>
+      `)
+      .openOn(map);
+  }
+
+  map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+}
+
+/**
+ * Clear preview route
+ */
+export function clearPreviewRoute() {
+  previewRouteLayer.clearLayers();
+  map.closePopup();
+}
+
+/**
+ * Render all active routes (vehicles en route to incidents)
+ */
+export function renderActiveRoutes(routes) {
+  activeRoutesLayer.clearLayers();
+
+  routes.forEach(route => {
+    if (!route.route_geometry || !route.route_geometry.coordinates) return;
+
+    const coords = route.route_geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+    const color = SEVERITY_COLORS[route.severity] || '#0d6efd';
+    
+    // Main route line
+    const polyline = L.polyline(coords, {
+      color: color,
+      weight: 4,
+      opacity: 0.7,
+      lineCap: 'round',
+      lineJoin: 'round'
+    });
+
+    // Format duration
+    const durationMin = Math.round((route.route_duration_s || 0) / 60);
+    const distanceKm = ((route.route_distance_m || 0) / 1000).toFixed(1);
+
+    polyline.bindPopup(`
+      <strong>${route.incident_title}</strong><br>
+      <span class="badge bg-${getSeverityBadgeColor(route.severity)}">${route.severity}</span>
+      <span class="badge bg-info">${route.status}</span><br>
+      <small>Distance: ${distanceKm} km | ETA: ${durationMin} min</small>
+    `);
+
+    polyline.addTo(activeRoutesLayer);
+  });
+}
+
+/**
+ * Clear active routes
+ */
+export function clearActiveRoutes() {
+  activeRoutesLayer.clearLayers();
 }
 
 /**

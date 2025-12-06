@@ -7,6 +7,7 @@
 export const DashboardState = {
   incidents: [],
   vehicles: [],
+  activeRoutes: [],
   selectedIncident: null,
   currentUser: null,
   filters: {
@@ -29,6 +30,14 @@ export const DashboardState = {
   setVehicles(vehicles) {
     this.vehicles = vehicles;
     this.notifyListeners('vehicles');
+  },
+
+  /**
+   * Update active routes
+   */
+  setActiveRoutes(routes) {
+    this.activeRoutes = routes;
+    this.notifyListeners('activeRoutes');
   },
 
   /**
@@ -71,14 +80,16 @@ export const DashboardState = {
    * Get incident by ID
    */
   getIncidentById(id) {
-    return this.incidents.find(inc => inc.properties.id === id);
+    // GeoJSON features have id at top level, not in properties
+    return this.incidents.find(inc => inc.id === id || inc.id === parseInt(id));
   },
 
   /**
    * Get vehicle by ID
    */
   getVehicleById(id) {
-    return this.vehicles.find(veh => veh.properties.id === id);
+    // GeoJSON features have id at top level, not in properties
+    return this.vehicles.find(veh => veh.id === id || veh.id === parseInt(id));
   },
 
   /**
