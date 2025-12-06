@@ -9,6 +9,46 @@ from django.urls import reverse_lazy
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Custom JWT serializer that includes user info in response.
+    """
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        user = self.user
+        profile = getattr(user, 'profile', None)
+
+        # Add user info to token response
+        data['user'] = {
+            'id': user.id,
+            'username': user.username,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+        }
+        data['role'] = profile.role if profile else 'viewer'
+        data['role_display'] = profile.get_role_display() if profile else 'Viewer'
+        data['is_dispatcher'] = profile.is_dispatcher if profile else False
+        data['is_responder'] = profile.is_responder if profile else False
+        data['is_admin'] = profile.is_admin if profile else False
+
+        return data
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """
+    Custom token view that returns user info with tokens.
+
+    POST /api/auth/token/
+    Body: {username, password}
+    Returns: {access, refresh, user, role, is_dispatcher, is_responder, is_admin}
+    """
+    serializer_class = CustomTokenObtainPairSerializer
 
 
 class CustomLoginView(LoginView):
