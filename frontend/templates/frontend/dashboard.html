@@ -17,48 +17,46 @@
         <div class="card-body">
           <!-- User Info Header -->
           <div class="user-info">
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center">
               <div class="user-avatar">
-                <i class="bi bi-person-circle" style="font-size: 2.5rem; opacity: 0.9;"></i>
+                <i class="bi bi-person-circle"></i>
               </div>
               <div>
-                <h5 class="mb-1">{{ user.get_full_name|default:user.username }}</h5>
+                <h5>{{ user.get_full_name|default:user.username }}</h5>
                 <span class="badge">{{ user.profile.get_role_display|default:"Viewer" }}</span>
               </div>
             </div>
           </div>
 
-          <!-- Quick Stats -->
+          <!-- Quick Stats - Compact Row -->
           <div class="quick-stats">
-            <h6><i class="bi bi-bar-chart-fill me-2"></i>Live Statistics</h6>
             <div class="stat-item">
-              <span class="stat-label"><i class="bi bi-exclamation-triangle me-2"></i>Active Incidents</span>
               <span class="stat-value badge bg-danger" id="activeCount">-</span>
+              <span class="stat-label">Active</span>
             </div>
             <div class="stat-item">
-              <span class="stat-label"><i class="bi bi-truck me-2"></i>Available Vehicles</span>
               <span class="stat-value badge bg-success" id="vehicleCount">-</span>
+              <span class="stat-label">Vehicles</span>
             </div>
             <div class="stat-item">
-              <span class="stat-label"><i class="bi bi-geo-alt me-2"></i>On Scene</span>
               <span class="stat-value badge bg-warning" id="onSceneCount">-</span>
+              <span class="stat-label">On Scene</span>
             </div>
           </div>
 
           <!-- Mobile filters toggle -->
           <div class="d-md-none px-3 pt-3">
-            <button class="btn btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse" aria-expanded="false" aria-controls="filtersCollapse">
-              <i class="bi bi-funnel me-2"></i>Show Filters
+            <button class="btn btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
+              <i class="bi bi-funnel me-2"></i>Filters
             </button>
           </div>
 
           <!-- Filters Section -->
           <div class="filters collapse d-md-block" id="filtersCollapse">
-            <h6><i class="bi bi-funnel me-2"></i>Filter Incidents</h6>
             <div class="mb-3">
               <label for="filterStatus" class="form-label">Status</label>
               <select id="filterStatus" class="form-select">
-                <option value="">All Statuses</option>
+                <option value="">All</option>
                 <option value="pending">Pending</option>
                 <option value="dispatched">Dispatched</option>
                 <option value="en_route">En Route</option>
@@ -68,7 +66,7 @@
             <div class="mb-3">
               <label for="filterSeverity" class="form-label">Severity</label>
               <select id="filterSeverity" class="form-select">
-                <option value="">All Severities</option>
+                <option value="">All</option>
                 <option value="critical">Critical</option>
                 <option value="high">High</option>
                 <option value="medium">Medium</option>
@@ -78,7 +76,7 @@
             <div class="mb-3">
               <label for="filterType" class="form-label">Type</label>
               <select id="filterType" class="form-select">
-                <option value="">All Types</option>
+                <option value="">All</option>
                 <option value="fire">Fire</option>
                 <option value="medical">Medical</option>
                 <option value="crime">Crime</option>
@@ -89,15 +87,11 @@
             <!-- Toggle Switches -->
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
-              <label class="form-check-label" for="autoRefresh">
-                <i class="bi bi-arrow-repeat me-1"></i> Auto-refresh (15s)
-              </label>
+              <label class="form-check-label" for="autoRefresh">Auto-refresh</label>
             </div>
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" id="heatmapToggle">
-              <label class="form-check-label" for="heatmapToggle">
-                <i class="bi bi-fire me-1"></i> Show Heatmap
-              </label>
+              <label class="form-check-label" for="heatmapToggle">Heatmap</label>
             </div>
           </div>
 
@@ -105,7 +99,7 @@
           {% if user.profile.is_dispatcher %}
           <div class="actions">
             <button id="createIncidentBtn" class="btn btn-primary w-100">
-              <i class="bi bi-plus-circle me-2"></i>Report Incident
+              <i class="bi bi-plus-lg me-2"></i>Report Incident
             </button>
           </div>
           {% endif %}
