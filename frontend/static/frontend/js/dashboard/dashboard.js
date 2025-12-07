@@ -39,6 +39,9 @@ async function init() {
       });
     }
 
+    // Set up mobile sidebar toggle
+    setupMobileSidebar();
+
     // Start polling
     startPolling();
 
@@ -47,6 +50,43 @@ async function init() {
     console.error('Dashboard initialization failed:', error);
     showNotification('Failed to initialize dashboard', 'danger');
   }
+}
+
+/**
+ * Set up mobile sidebar toggle functionality
+ */
+function setupMobileSidebar() {
+  const sidebar = document.getElementById('dashboardSidebar');
+  const toggleBtn = document.getElementById('mobileSidebarBtn');
+
+  if (!sidebar || !toggleBtn) return;
+
+  // Create overlay for mobile
+  const overlay = document.createElement('div');
+  overlay.className = 'sidebar-overlay';
+  document.body.appendChild(overlay);
+
+  function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.add('visible');
+    toggleBtn.classList.add('hidden');
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('visible');
+    toggleBtn.classList.remove('hidden');
+  }
+
+  toggleBtn.addEventListener('click', openSidebar);
+  overlay.addEventListener('click', closeSidebar);
+
+  // Close sidebar when pressing Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+      closeSidebar();
+    }
+  });
 }
 
 /**

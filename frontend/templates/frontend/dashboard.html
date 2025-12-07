@@ -11,103 +11,7 @@
 {% block content %}
 <div class="dashboard-container">
   <div class="dashboard-grid">
-    <!-- Left Sidebar -->
-    <aside class="dashboard-sidebar">
-      <div class="card h-100">
-        <div class="card-body">
-          <!-- User Info Header -->
-          <div class="user-info">
-            <div class="d-flex align-items-center">
-              <div class="user-avatar">
-                <i class="bi bi-person-circle"></i>
-              </div>
-              <div>
-                <h5>{{ user.get_full_name|default:user.username }}</h5>
-                <span class="badge">{{ user.profile.get_role_display|default:"Viewer" }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Quick Stats - Compact Row -->
-          <div class="quick-stats">
-            <div class="stat-item">
-              <span class="stat-value badge bg-danger" id="activeCount">-</span>
-              <span class="stat-label">Active</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-value badge bg-success" id="vehicleCount">-</span>
-              <span class="stat-label">Vehicles</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-value badge bg-warning" id="onSceneCount">-</span>
-              <span class="stat-label">On Scene</span>
-            </div>
-          </div>
-
-          <!-- Mobile filters toggle -->
-          <div class="d-md-none px-3 pt-3">
-            <button class="btn btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
-              <i class="bi bi-funnel me-2"></i>Filters
-            </button>
-          </div>
-
-          <!-- Filters Section -->
-          <div class="filters collapse d-md-block" id="filtersCollapse">
-            <div class="mb-3">
-              <label for="filterStatus" class="form-label">Status</label>
-              <select id="filterStatus" class="form-select">
-                <option value="">All</option>
-                <option value="pending">Pending</option>
-                <option value="dispatched">Dispatched</option>
-                <option value="en_route">En Route</option>
-                <option value="on_scene">On Scene</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="filterSeverity" class="form-label">Severity</label>
-              <select id="filterSeverity" class="form-select">
-                <option value="">All</option>
-                <option value="critical">Critical</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
-            <div class="mb-3">
-              <label for="filterType" class="form-label">Type</label>
-              <select id="filterType" class="form-select">
-                <option value="">All</option>
-                <option value="fire">Fire</option>
-                <option value="medical">Medical</option>
-                <option value="crime">Crime</option>
-                <option value="accident">Accident</option>
-              </select>
-            </div>
-
-            <!-- Toggle Switches -->
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
-              <label class="form-check-label" for="autoRefresh">Auto-refresh</label>
-            </div>
-            <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="heatmapToggle">
-              <label class="form-check-label" for="heatmapToggle">Heatmap</label>
-            </div>
-          </div>
-
-          <!-- Actions -->
-          {% if user.profile.is_dispatcher %}
-          <div class="actions">
-            <button id="createIncidentBtn" class="btn btn-primary w-100">
-              <i class="bi bi-plus-lg me-2"></i>Report Incident
-            </button>
-          </div>
-          {% endif %}
-        </div>
-      </div>
-    </aside>
-
-    <!-- Center Map -->
+    <!-- Full Screen Map (Background) -->
     <div class="dashboard-map">
       <div id="map" class="map-container" role="application" aria-label="Interactive incident map"></div>
 
@@ -154,7 +58,129 @@
       </div>
     </div>
 
-    <!-- Right Panel -->
+    <!-- Mobile Sidebar Toggle -->
+    <button class="mobile-sidebar-btn" id="mobileSidebarBtn" title="Open Menu">
+      <i class="bi bi-list"></i>
+    </button>
+
+    <!-- Left Sidebar (Floating) -->
+    <aside class="dashboard-sidebar" id="dashboardSidebar">
+      <div class="card h-100">
+        <div class="card-body">
+          <!-- User Info Header -->
+          <div class="user-info">
+            <div class="d-flex align-items-center">
+              <div class="user-avatar">
+                <i class="bi bi-person-circle"></i>
+              </div>
+              <div>
+                <h5>{{ user.get_full_name|default:user.username }}</h5>
+                <span class="badge">{{ user.profile.get_role_display|default:"Viewer" }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Stats - Compact Row -->
+          <div class="quick-stats">
+            <div class="stat-item">
+              <span class="stat-value badge bg-danger" id="activeCount">-</span>
+              <span class="stat-label">Active</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value badge bg-success" id="vehicleCount">-</span>
+              <span class="stat-label">Vehicles</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value badge bg-warning" id="onSceneCount">-</span>
+              <span class="stat-label">On Scene</span>
+            </div>
+          </div>
+
+          <!-- Mobile filters toggle -->
+          <div class="d-md-none px-3 pt-3">
+            <button class="btn btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#filtersCollapse">
+              <i class="bi bi-funnel me-2"></i>Filters
+            </button>
+          </div>
+
+          <!-- Filters Section -->
+          <div class="filters collapse d-md-block" id="filtersCollapse">
+            <div class="filter-group">
+              <label for="filterStatus" class="form-label">
+                <i class="bi bi-flag"></i> Status
+              </label>
+              <select id="filterStatus" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="dispatched">Dispatched</option>
+                <option value="en_route">En Route</option>
+                <option value="on_scene">On Scene</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filterSeverity" class="form-label">
+                <i class="bi bi-exclamation-triangle"></i> Severity
+              </label>
+              <select id="filterSeverity" class="form-select">
+                <option value="">All Severities</option>
+                <option value="critical">Critical</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="filterType" class="form-label">
+                <i class="bi bi-tag"></i> Incident Type
+              </label>
+              <select id="filterType" class="form-select">
+                <option value="">All Types</option>
+                <option value="fire">Fire</option>
+                <option value="medical">Medical</option>
+                <option value="crime">Crime</option>
+                <option value="accident">Accident</option>
+              </select>
+            </div>
+
+            <!-- Toggle Switches -->
+            <div class="toggle-section">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="autoRefresh" checked>
+                <label class="form-check-label" for="autoRefresh">
+                  <i class="bi bi-arrow-repeat"></i> Auto-refresh
+                </label>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="heatmapToggle">
+                <label class="form-check-label" for="heatmapToggle">
+                  <i class="bi bi-fire"></i> Heatmap
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          {% if user.profile.is_dispatcher %}
+          <div class="actions">
+            <button id="createIncidentBtn" class="btn btn-primary w-100">
+              <i class="bi bi-plus-lg"></i>
+              <span>Report Incident</span>
+            </button>
+          </div>
+          {% endif %}
+
+          <!-- Status Footer (matching map sidebar) -->
+          <div class="sidebar-footer">
+            <div class="status-indicator" aria-live="polite" id="connectionStatus">
+              <i class="bi bi-check-circle"></i>
+              <span>Connected</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Panel (Floating) -->
     <aside class="dashboard-panel">
       <div class="card h-100">
         <div class="card-header">

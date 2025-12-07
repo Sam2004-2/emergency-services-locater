@@ -1,39 +1,43 @@
 /* ===================================================================
    Dashboard Styles - Modern Professional Design
+   Matching the full-screen map page aesthetic
    =================================================================== */
 
 /* ===================================================================
-   Dashboard Layout - Full Screen with Floating Panels
+   Dashboard Layout - Full Screen Map with Floating Panels
    =================================================================== */
 
 .dashboard-container {
   position: relative;
+  width: 100%;
   height: calc(100vh - 56px);
   overflow: hidden;
-  background: var(--color-surface);
 }
 
+/* The map is the base layer, panels float on top */
 .dashboard-grid {
-  display: grid;
-  grid-template-columns: 260px 1fr 380px;
-  grid-template-rows: 1fr;
+  position: relative;
+  width: 100%;
   height: 100%;
-  gap: 0;
 }
 
 /* ===================================================================
-   Left Sidebar - Floating Glass Panel
+   Left Sidebar - Floating Glass Panel (matching map-sidebar)
    =================================================================== */
 
 .dashboard-sidebar {
-  position: relative;
-  z-index: 10;
-  padding: 16px;
-  background: transparent;
-  overflow: visible;
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  bottom: 16px;
+  width: 280px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
 }
 
 .dashboard-sidebar > .card {
+  flex: 1;
   background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -42,25 +46,30 @@
   box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06),
-    0 20px 25px -5px rgba(0, 0, 0, 0.08);
+    0 20px 25px -5px rgba(0, 0, 0, 0.1);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease;
 }
 
 .dashboard-sidebar .card-body {
   padding: 0;
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
   overflow: hidden;
 }
 
-/* User Info Header - Light & Clean */
+/* User Info Header - Primary Gradient (matching map sidebar) */
 .user-info {
-  padding: 16px 20px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  padding: 20px 20px 16px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
   margin: 0;
   border-radius: 16px 16px 0 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-bottom: none;
+  color: white;
 }
 
 .user-info .d-flex {
@@ -70,12 +79,12 @@
 .user-info .user-avatar {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: rgba(255, 255, 255, 0.2);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 119, 182, 0.25);
+  box-shadow: none;
 }
 
 .user-info .user-avatar i {
@@ -84,14 +93,14 @@
 }
 
 .user-info h5 {
-  color: var(--color-text-primary) !important;
+  color: white !important;
   font-weight: 600;
   font-size: 0.9375rem;
   margin-bottom: 2px;
 }
 
 .user-info .badge {
-  background: var(--color-primary) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
   color: #FFFFFF !important;
   border: none;
   font-weight: 500;
@@ -106,8 +115,8 @@
 .quick-stats {
   display: flex;
   gap: 10px;
-  padding: 14px 16px;
-  background: white;
+  padding: 16px;
+  background: var(--color-primary-subtle);
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
@@ -122,16 +131,17 @@
   align-items: center;
   justify-content: center;
   padding: 12px 8px;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  background: white;
   border-radius: 12px;
   gap: 6px;
   border: 1px solid rgba(0, 0, 0, 0.04);
   transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .stat-item:hover {
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .stat-label {
@@ -171,9 +181,9 @@
   color: white !important;
 }
 
-/* Filters Section - Cleaner */
+/* Filters Section - Matching Map Sidebar Style */
 .filters {
-  padding: 16px;
+  padding: 20px;
   flex: 1;
   overflow-y: auto;
   background: white;
@@ -183,32 +193,49 @@
   display: none; /* Hide redundant header */
 }
 
-.filters .mb-3 {
-  margin-bottom: 12px !important;
+/* Filter Groups - Matching Map Sidebar */
+.filter-group {
+  margin-bottom: 20px;
 }
 
 .filters .form-label {
-  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
   font-weight: 600;
-  color: var(--color-text-tertiary);
-  margin-bottom: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.filters .form-label i {
+  color: var(--color-primary);
+  font-size: 1rem;
 }
 
 .filters .form-select {
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 0.8125rem;
+  background-color: white;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.875rem;
   transition: all 0.2s ease;
 }
 
 .filters .form-select:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(0, 119, 182, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.1);
   background-color: white;
+}
+
+/* Toggle Section - Styled like map tips section */
+.toggle-section {
+  background: var(--color-primary-subtle);
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 8px;
 }
 
 /* Toggle Switches - Inline Compact */
@@ -219,10 +246,12 @@
   border-top: none;
 }
 
-.filters .form-check.form-switch:first-of-type {
-  margin-top: 4px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+.toggle-section .form-check.form-switch:first-child {
+  padding-top: 0;
+}
+
+.toggle-section .form-check.form-switch:last-child {
+  padding-bottom: 0;
 }
 
 .filters .form-check.form-switch .form-check-input {
@@ -239,34 +268,73 @@
 }
 
 .filters .form-check.form-switch .form-check-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.8125rem;
   color: var(--color-text-secondary);
   cursor: pointer;
 }
 
 .filters .form-check.form-switch .form-check-label i {
-  color: var(--color-text-tertiary);
+  color: var(--color-primary);
   font-size: 0.875rem;
 }
 
-/* Actions Section - Bottom Fixed */
+/* Sidebar Footer - Status Indicator (matching map sidebar) */
+.dashboard-sidebar .sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--color-surface);
+  border-radius: 0 0 16px 16px;
+}
+
+.dashboard-sidebar .status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: var(--color-text-tertiary);
+}
+
+.dashboard-sidebar .status-indicator i {
+  color: #28a745;
+}
+
+.dashboard-sidebar .status-indicator.error {
+  color: var(--color-emergency);
+}
+
+.dashboard-sidebar .status-indicator.error i {
+  color: var(--color-emergency);
+}
+
+.dashboard-sidebar .status-indicator.loading i {
+  color: var(--color-primary);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Actions Section - Above Footer */
 .actions {
-  padding: 12px 16px;
+  padding: 16px;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   background: white;
-  border-radius: 0 0 16px 16px;
 }
 
 .actions .btn {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 6px;
+  padding: 14px 12px;
   font-size: 0.8125rem;
   font-weight: 600;
-  border-radius: 10px;
+  border-radius: 12px;
   transition: all 0.2s ease;
+}
+
+.actions .btn i {
+  font-size: 1.25rem;
 }
 
 .actions .btn-primary {
@@ -276,8 +344,9 @@
 }
 
 .actions .btn-primary:hover {
-  transform: translateY(-1px);
+  transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 119, 182, 0.35);
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
 }
 
 /* Mobile Filters Toggle */
@@ -287,13 +356,75 @@
 }
 
 /* ===================================================================
-   Center Map Area
+   Mobile Sidebar Toggle Button
+   =================================================================== */
+
+.mobile-sidebar-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-sidebar-btn i {
+  font-size: 1.25rem;
+  color: var(--color-primary);
+}
+
+.mobile-sidebar-btn:hover {
+  background: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(0, 119, 182, 0.3);
+}
+
+.mobile-sidebar-btn:hover i {
+  color: white;
+}
+
+.mobile-sidebar-btn.hidden {
+  display: none !important;
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.sidebar-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ===================================================================
+   Center Map Area - Full Screen Background
    =================================================================== */
 
 .dashboard-map {
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
   overflow: hidden;
-  background: var(--color-surface);
 }
 
 /* ===================================================================
@@ -470,11 +601,43 @@
   border-radius: 0;
 }
 
-/* Leaflet customizations */
+/* Leaflet customizations - Matching Map Page */
 .dashboard-map .leaflet-container {
   height: 100%;
   font-family: inherit;
   background: #e8ecf1;
+}
+
+/* Zoom controls styling */
+.dashboard-map .leaflet-control-zoom {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.dashboard-map .leaflet-control-zoom a {
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+  font-size: 18px;
+  color: var(--color-text-primary);
+  background: white;
+  border: none;
+}
+
+.dashboard-map .leaflet-control-zoom a:hover {
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+/* Attribution styling */
+.dashboard-map .leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  padding: 4px 8px;
+  border-radius: 4px 0 0 0;
+  font-size: 10px;
 }
 
 .dashboard-map .leaflet-popup-content-wrapper {
@@ -498,19 +661,22 @@
 }
 
 /* ===================================================================
-   Right Panel - Incidents List & Details
+   Right Panel - Floating Incidents List & Details
    =================================================================== */
 
 .dashboard-panel {
-  position: relative;
-  z-index: 10;
-  padding: 16px;
-  padding-left: 0;
-  background: transparent;
-  overflow: visible;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
+  width: 380px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
 }
 
 .dashboard-panel > .card {
+  flex: 1;
   background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
@@ -519,43 +685,45 @@
   box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
     0 2px 4px -1px rgba(0, 0, 0, 0.06),
-    0 20px 25px -5px rgba(0, 0, 0, 0.08);
+    0 20px 25px -5px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease;
 }
 
 .dashboard-panel .card-header {
-  background: white;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border-bottom: none;
   padding: 0;
 }
 
 .dashboard-panel .nav-tabs {
   border: none;
-  padding: 8px 8px 0;
+  padding: 12px 12px 0;
 }
 
 .dashboard-panel .nav-tabs .nav-link {
   border: none;
   border-radius: 10px 10px 0 0;
-  padding: 12px 20px;
-  font-size: 0.875rem;
+  padding: 12px 16px;
+  font-size: 0.8125rem;
   font-weight: 600;
-  color: var(--color-text-tertiary);
+  color: rgba(255, 255, 255, 0.7);
   background: transparent;
   transition: all 0.2s ease;
 }
 
 .dashboard-panel .nav-tabs .nav-link:hover {
-  color: var(--color-primary);
-  background: var(--color-surface);
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .dashboard-panel .nav-tabs .nav-link.active {
   color: var(--color-primary);
-  background: var(--color-surface);
-  border-bottom: 2px solid var(--color-primary);
+  background: white;
+  border-bottom: none;
 }
 
 .dashboard-panel .card-body {
@@ -1113,44 +1281,56 @@
    =================================================================== */
 
 @media (max-width: 1400px) {
-  .dashboard-grid {
-    grid-template-columns: 240px 1fr 340px;
+  .dashboard-sidebar {
+    width: 260px;
+  }
+
+  .dashboard-panel {
+    width: 340px;
   }
 }
 
 @media (max-width: 1200px) {
-  .dashboard-grid {
-    grid-template-columns: 220px 1fr 300px;
-  }
-
-  .dashboard-sidebar,
-  .dashboard-panel {
-    padding: 12px;
+  .dashboard-sidebar {
+    width: 240px;
+    left: 12px;
+    top: 12px;
+    bottom: 12px;
   }
 
   .dashboard-panel {
-    padding-left: 0;
+    width: 300px;
+    right: 12px;
+    top: 12px;
+    bottom: 12px;
   }
 }
 
 @media (max-width: 992px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr auto;
+  /* Stack layout for tablets */
+  .dashboard-sidebar {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    bottom: auto;
+    width: 100%;
+    height: auto;
+    max-height: 50vh;
+    border-radius: 0;
+    z-index: 1001;
+    transform: translateY(-100%);
+    opacity: 0;
+    pointer-events: none;
   }
 
-  .dashboard-sidebar {
-    padding: 12px;
-    order: 1;
+  .dashboard-sidebar.open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
   }
 
   .dashboard-sidebar > .card {
-    border-radius: 12px;
-  }
-
-  .dashboard-map {
-    order: 2;
-    height: calc(100vh - 320px);
+    border-radius: 0 0 16px 16px;
   }
 
   .dashboard-panel {
@@ -1164,6 +1344,11 @@
   .quick-stats {
     padding: 12px 16px;
   }
+
+  /* Mobile toggle button */
+  .mobile-sidebar-btn {
+    display: flex;
+  }
 }
 
 @media (max-width: 768px) {
@@ -1172,11 +1357,11 @@
   }
 
   .dashboard-sidebar {
-    padding: 8px;
+    max-height: 60vh;
   }
 
   .dashboard-sidebar > .card {
-    border-radius: 12px;
+    border-radius: 0 0 12px 12px;
   }
 
   .user-info {
@@ -1192,7 +1377,7 @@
   }
 
   .stat-item {
-    padding: 6px 0;
+    padding: 8px 4px;
   }
 
   .filters {
@@ -1203,8 +1388,8 @@
     padding: 12px 14px;
   }
 
-  .dashboard-map {
-    height: calc(100vh - 280px);
+  .dashboard-sidebar .sidebar-footer {
+    padding: 12px 14px;
   }
 }
 
@@ -1291,17 +1476,16 @@
 
 @media print {
   .dashboard-sidebar,
-  .dashboard-panel {
-    display: none;
+  .dashboard-panel,
+  .map-layer-controls,
+  .mobile-sidebar-btn {
+    display: none !important;
   }
 
   .dashboard-map {
+    position: static;
     width: 100%;
     height: 100vh;
-  }
-
-  .dashboard-grid {
-    display: block;
   }
 }
 
