@@ -251,8 +251,9 @@
     padding: 0.75rem;
   }
 
-  .filters {
-    display: none; /* Hide filters on mobile to save space */
+  /* Filters now use Bootstrap collapse - no need to hide */
+  .filters.collapse:not(.show) {
+    display: none;
   }
 }
 

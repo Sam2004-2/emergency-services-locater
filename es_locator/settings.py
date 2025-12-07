@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.gis',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_gis',
+    'drf_spectacular',
     'corsheaders',
     'django_filters',
     'core',
@@ -156,6 +158,36 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly',
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# OpenAPI/Swagger Documentation Settings
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Emergency Services Locator API',
+    'DESCRIPTION': '''
+    RESTful API for the Emergency Services Locator application.
+
+    ## Features
+    - **Facilities**: Find and manage emergency service facilities (hospitals, fire stations, police, ambulance bases)
+    - **Incidents**: Create, track, and manage emergency incidents
+    - **Vehicles**: Track emergency response vehicles in real-time
+    - **Dispatch**: Dispatch vehicles to incidents with route calculation
+    - **Spatial Queries**: Find nearest facilities, search within radius, polygon queries
+
+    ## Authentication
+    Use JWT Bearer tokens for authentication. Obtain tokens via `/api/auth/token/`.
+    ''',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'TAGS': [
+        {'name': 'Facilities', 'description': 'Emergency service facility operations'},
+        {'name': 'Incidents', 'description': 'Incident management and tracking'},
+        {'name': 'Vehicles', 'description': 'Vehicle tracking and status'},
+        {'name': 'Dispatch', 'description': 'Dispatch operations'},
+        {'name': 'Counties', 'description': 'Administrative boundary data'},
+        {'name': 'Authentication', 'description': 'JWT authentication endpoints'},
     ],
 }
 

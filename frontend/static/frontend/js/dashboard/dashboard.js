@@ -6,7 +6,7 @@
 
 import { DashboardAPI } from './dashboard-api.js';
 import { DashboardState } from './dashboard-state.js';
-import { initMap, renderIncidents, renderVehicles, focusIncident, drawRoute, clearRoute, renderActiveRoutes, drawPreviewRoute, clearPreviewRoute } from './dashboard-map.js';
+import { initMap, renderIncidents, renderVehicles, focusIncident, drawRoute, clearRoute, renderActiveRoutes, drawPreviewRoute, clearPreviewRoute, toggleHeatmap, updateHeatmap } from './dashboard-map.js';
 import { renderIncidentsList, renderIncidentDetail, updateStats } from './dashboard-list.js';
 import { startPolling, stopPolling, pollNow } from './dashboard-polling.js';
 import { initForms, openDispatchModal, showNotification } from './dashboard-forms.js';
@@ -31,6 +31,14 @@ async function init() {
     // Set up state listeners
     setupStateListeners();
 
+    // Set up heatmap toggle
+    const heatmapToggle = document.getElementById('heatmapToggle');
+    if (heatmapToggle) {
+      heatmapToggle.addEventListener('change', (e) => {
+        toggleHeatmap(e.target.checked);
+      });
+    }
+
     // Start polling
     startPolling();
 
@@ -51,6 +59,7 @@ function setupStateListeners() {
     renderIncidents(filtered);
     renderIncidentsList();
     updateStats();
+    updateHeatmap(); // Refresh heatmap if enabled
   });
 
   // Listen for vehicles changes

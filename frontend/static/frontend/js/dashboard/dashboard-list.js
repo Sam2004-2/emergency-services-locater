@@ -1,10 +1,17 @@
 /**
  * Dashboard List Module
- * 
+ *
  * Renders incident list in the sidebar
  */
 
 import { DashboardState } from './dashboard-state.js';
+
+/**
+ * Check if we're on a mobile/tablet viewport where the right panel is hidden
+ */
+function isMobileView() {
+  return window.innerWidth < 992;
+}
 
 const SEVERITY_BADGE = {
   critical: 'danger',
@@ -32,9 +39,20 @@ export function renderIncidentsList() {
   const incidents = DashboardState.getFilteredIncidents();
 
   if (incidents.length === 0) {
+    const hasFilters = DashboardState.filters.status ||
+                       DashboardState.filters.severity ||
+                       DashboardState.filters.incident_type;
     listContainer.innerHTML = `
       <div class="text-center text-muted p-4">
-        <p>No incidents found</p>
+        <svg viewBox="0 0 24 24" fill="currentColor" width="48" height="48" class="mb-3 opacity-50">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+        </svg>
+        <p class="mb-2"><strong>No incidents found</strong></p>
+        <p class="small mb-0">
+          ${hasFilters
+            ? 'Try adjusting your filters to see more results.'
+            : 'There are no active incidents at this time.'}
+        </p>
       </div>
     `;
     return;
@@ -54,10 +72,16 @@ export function renderIncidentsList() {
     if (card) {
       card.addEventListener('click', () => {
         DashboardState.selectIncident(incident);
-        // Switch to detail tab
-        const detailTab = document.getElementById('detail-tab');
-        if (detailTab) {
-          detailTab.click();
+
+        if (isMobileView()) {
+          // On mobile, show the modal instead of switching tabs
+          showMobileDetailModal(incident);
+        } else {
+          // On desktop, switch to detail tab
+          const detailTab = document.getElementById('detail-tab');
+          if (detailTab) {
+            detailTab.click();
+          }
         }
       });
     }
@@ -111,7 +135,11 @@ export function renderIncidentDetail() {
   if (!incident) {
     detailContainer.innerHTML = `
       <div class="text-center text-muted p-4">
-        Select an incident to view details
+        <svg viewBox="0 0 24 24" fill="currentColor" width="48" height="48" class="mb-3 opacity-50">
+          <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v2c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
+        </svg>
+        <p class="mb-2"><strong>No incident selected</strong></p>
+        <p class="small mb-0">Click on an incident from the list or map to view its details.</p>
       </div>
     `;
     return;
@@ -228,6 +256,123 @@ export function renderIncidentDetail() {
       </div>
     </div>
   `;
+}
+
+/**
+ * Show incident detail in mobile modal
+ */
+function showMobileDetailModal(incident) {
+  const modalContent = document.getElementById('mobileDetailContent');
+  const modalTitle = document.getElementById('mobileDetailModalLabel');
+  const modal = document.getElementById('mobileDetailModal');
+
+  if (!modalContent || !modal) return;
+
+  const props = incident.properties;
+  const currentUser = DashboardState.currentUser;
+  const canDispatch = currentUser?.is_dispatcher;
+  const canUpdateStatus = currentUser?.is_dispatcher || currentUser?.is_responder;
+
+  // Update modal title
+  if (modalTitle) {
+    modalTitle.textContent = props.title;
+  }
+
+  // Render content (similar to renderIncidentDetail but without the title)
+  modalContent.innerHTML = `
+    <div class="mb-3">
+      <span class="badge bg-${SEVERITY_BADGE[props.severity]} me-1">${props.severity_display}</span>
+      <span class="badge bg-${STATUS_BADGE[props.status]}">${props.status_display}</span>
+      <span class="badge bg-light text-dark">${props.incident_type_display}</span>
+    </div>
+
+    ${props.description ? `
+      <div class="mb-3">
+        <strong>Description:</strong>
+        <p class="mb-0">${escapeHtml(props.description)}</p>
+      </div>
+    ` : ''}
+
+    <div class="mb-3">
+      <strong>Address:</strong>
+      <p class="mb-0">${escapeHtml(props.address || 'Not specified')}</p>
+    </div>
+
+    <div class="mb-3">
+      <strong>Reported by:</strong> ${props.reported_by_name || 'Unknown'}
+    </div>
+
+    ${props.assigned_responder_name ? `
+      <div class="mb-3">
+        <strong>Assigned to:</strong> ${props.assigned_responder_name}
+      </div>
+    ` : ''}
+
+    ${props.nearest_facility_name ? `
+      <div class="mb-3">
+        <strong>Nearest Facility:</strong> ${props.nearest_facility_name}
+      </div>
+    ` : ''}
+
+    <div class="mb-3">
+      <strong>Created:</strong> ${formatDateTime(props.created_at)}
+    </div>
+
+    ${props.route_distance_m ? `
+      <div class="mb-3">
+        <strong>Route:</strong> ${(props.route_distance_m / 1000).toFixed(2)} km (~${Math.round(props.route_duration_s / 60)} min)
+      </div>
+    ` : ''}
+
+    <div class="mt-4">
+      ${canDispatch && props.status === 'pending' ? `
+        <button
+          class="btn btn-primary w-100 mb-2"
+          onclick="window.dashboardActions.openDispatchModal(${incident.id})"
+        >
+          Dispatch Vehicle
+        </button>
+      ` : ''}
+
+      ${canUpdateStatus && props.is_active ? `
+        <div class="btn-group w-100 mb-2" role="group">
+          ${props.status !== 'en_route' ? `
+            <button
+              class="btn btn-sm btn-outline-primary"
+              onclick="window.dashboardActions.updateStatus(${incident.id}, 'en_route')"
+            >
+              En Route
+            </button>
+          ` : ''}
+          ${props.status !== 'on_scene' ? `
+            <button
+              class="btn btn-sm btn-outline-warning"
+              onclick="window.dashboardActions.updateStatus(${incident.id}, 'on_scene')"
+            >
+              On Scene
+            </button>
+          ` : ''}
+          <button
+            class="btn btn-sm btn-outline-success"
+            onclick="window.dashboardActions.updateStatus(${incident.id}, 'resolved')"
+          >
+            Resolve
+          </button>
+        </div>
+      ` : ''}
+
+      <button
+        class="btn btn-outline-secondary btn-sm w-100"
+        onclick="window.dashboardActions.focusOnMap(${incident.id})"
+      >
+        Show on Map
+      </button>
+    </div>
+  `;
+
+  // Show the modal using Bootstrap
+  const bsModal = bootstrap.Modal.getOrCreateInstance(modal);
+  bsModal.show();
 }
 
 /**

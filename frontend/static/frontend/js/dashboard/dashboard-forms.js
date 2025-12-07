@@ -67,14 +67,33 @@ export function initForms() {
  */
 function showCreateIncidentModal() {
   const modal = new bootstrap.Modal(document.getElementById('createIncidentModal'));
-  
+
   // Reset form
   document.getElementById('createIncidentForm').reset();
-  
-  // Set default coordinates (Dublin center)
-  document.getElementById('incidentLat').value = '53.349';
-  document.getElementById('incidentLng').value = '-6.260';
-  
+
+  // Try to get user's location, fall back to Dublin center
+  const latInput = document.getElementById('incidentLat');
+  const lngInput = document.getElementById('incidentLng');
+
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        latInput.value = position.coords.latitude.toFixed(6);
+        lngInput.value = position.coords.longitude.toFixed(6);
+      },
+      () => {
+        // Geolocation failed or denied, use Dublin center as fallback
+        latInput.value = '53.349';
+        lngInput.value = '-6.260';
+      },
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+  } else {
+    // Geolocation not supported, use Dublin center
+    latInput.value = '53.349';
+    lngInput.value = '-6.260';
+  }
+
   modal.show();
 }
 
@@ -116,7 +135,18 @@ async function handleCreateIncident() {
 
   } catch (error) {
     console.error('Failed to create incident:', error);
-    showNotification('Failed to create incident: ' + error.message, 'danger');
+    // Provide more helpful error messages
+    let errorMsg = 'Failed to create incident. ';
+    if (error.message.includes('401') || error.message.includes('403')) {
+      errorMsg += 'You do not have permission to create incidents.';
+    } else if (error.message.includes('400')) {
+      errorMsg += 'Please check all required fields are filled correctly.';
+    } else if (error.message.includes('network') || error.message.includes('fetch')) {
+      errorMsg += 'Network error. Please check your connection and try again.';
+    } else {
+      errorMsg += error.message || 'Please try again.';
+    }
+    showNotification(errorMsg, 'danger');
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Create Incident';
@@ -269,7 +299,20 @@ async function handleDispatch() {
 
   } catch (error) {
     console.error('Failed to dispatch:', error);
-    showNotification('Failed to dispatch: ' + error.message, 'danger');
+    // Provide more helpful error messages
+    let errorMsg = 'Failed to dispatch vehicle. ';
+    if (error.message.includes('Please select')) {
+      errorMsg = error.message;
+    } else if (error.message.includes('401') || error.message.includes('403')) {
+      errorMsg += 'You do not have permission to dispatch vehicles.';
+    } else if (error.message.includes('already')) {
+      errorMsg += 'This incident already has a vehicle dispatched.';
+    } else if (error.message.includes('network') || error.message.includes('fetch')) {
+      errorMsg += 'Network error. Please check your connection and try again.';
+    } else {
+      errorMsg += error.message || 'Please try again.';
+    }
+    showNotification(errorMsg, 'danger');
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Dispatch';
