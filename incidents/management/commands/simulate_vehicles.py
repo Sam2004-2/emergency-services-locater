@@ -11,6 +11,34 @@ from incidents.models import Incident, Vehicle
 class Command(BaseCommand):
     help = 'Simulate vehicle positions and movements for demo purposes'
 
+    # Major locations across Ireland for vehicle distribution
+    IRELAND_BASES = [
+        # Dublin Region
+        ('Dublin', 53.3498, -6.2603),
+        # Cork Region
+        ('Cork', 51.8985, -8.4756),
+        # Galway Region
+        ('Galway', 53.2707, -9.0568),
+        # Limerick Region
+        ('Limerick', 52.6638, -8.6267),
+        # Waterford Region
+        ('Waterford', 52.2593, -7.1128),
+        # Kilkenny Region
+        ('Kilkenny', 52.6541, -7.2448),
+        # Kerry Region
+        ('Killarney', 52.0590, -9.5044),
+        # Sligo Region
+        ('Sligo', 54.2697, -8.4694),
+        # Donegal Region
+        ('Letterkenny', 54.9558, -7.7342),
+        # Midlands
+        ('Athlone', 53.4239, -7.9407),
+        # East Coast
+        ('Drogheda', 53.7189, -6.3560),
+        ('Dundalk', 54.0037, -6.4158),
+        ('Wexford', 52.3369, -6.4633),
+    ]
+
     def add_arguments(self, parser):
         parser.add_argument(
             '--duration',
@@ -29,14 +57,32 @@ class Command(BaseCommand):
             action='store_true',
             help='Create demo vehicles if they don\'t exist',
         )
+        parser.add_argument(
+            '--nationwide',
+            action='store_true',
+            help='Create vehicles across all of Ireland (not just Dublin)',
+        )
+        parser.add_argument(
+            '--clear',
+            action='store_true',
+            help='Clear existing vehicles before creating new ones',
+        )
 
     def handle(self, *args, **options):
         duration = options['duration']
         interval = options['interval']
         create_vehicles = options['create_vehicles']
+        nationwide = options['nationwide']
+        clear = options['clear']
+
+        if clear:
+            deleted = Vehicle.objects.all().delete()
+            self.stdout.write(
+                self.style.WARNING(f'Deleted {deleted[0]} existing vehicles')
+            )
 
         if create_vehicles:
-            self.create_demo_vehicles()
+            self.create_demo_vehicles(nationwide=nationwide)
 
         vehicles = Vehicle.objects.all()
         if not vehicles.exists():
@@ -68,54 +114,104 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS('Simulation completed'))
 
-    def create_demo_vehicles(self):
-        """Create demo vehicles if they don't exist."""
+    def create_demo_vehicles(self, nationwide=False):
+        """Create demo vehicles across Ireland."""
         from services.models import EmergencyFacility
 
-        # Dublin City Centre as base
-        base_location = Point(-6.2603, 53.3498, srid=4326)
-
-        vehicles_data = [
-            ('AMB-001', 'ambulance', 'available'),
-            ('AMB-002', 'ambulance', 'available'),
-            ('FIRE-001', 'fire_engine', 'available'),
-            ('FIRE-002', 'fire_engine', 'available'),
-            ('GARDA-001', 'police_car', 'available'),
-            ('GARDA-002', 'police_car', 'available'),
-            ('HELI-001', 'helicopter', 'available'),
-        ]
+        facility_type_map = {
+            'ambulance': 'hospital',
+            'fire_engine': 'fire_station',
+            'police_car': 'police_station',
+            'helicopter': 'hospital',
+        }
 
         created = 0
-        for callsign, vehicle_type, status in vehicles_data:
-            if not Vehicle.objects.filter(callsign=callsign).exists():
-                # Random position around Dublin
-                lat = 53.3498 + random.uniform(-0.05, 0.05)
-                lng = -6.2603 + random.uniform(-0.05, 0.05)
-                location = Point(lng, lat, srid=4326)
 
-                # Try to find a matching facility
-                facility_type_map = {
-                    'ambulance': 'hospital',
-                    'fire_engine': 'fire_station',
-                    'police_car': 'police_station',
-                    'helicopter': 'hospital',
-                }
-                facility_type = facility_type_map[vehicle_type]
-                base_facility = EmergencyFacility.objects.filter(
-                    facility_type=facility_type
-                ).first()
+        if nationwide:
+            # Create vehicles for each major location across Ireland
+            for location_name, base_lat, base_lng in self.IRELAND_BASES:
+                # Create prefix from location name
+                prefix = location_name[:3].upper()
 
-                Vehicle.objects.create(
-                    callsign=callsign,
-                    vehicle_type=vehicle_type,
-                    status=status,
-                    current_position=location,
-                    heading=random.uniform(0, 360),
-                    speed_kmh=0,
-                    base_facility=base_facility,
-                )
-                created += 1
-                self.stdout.write(f'Created vehicle: {callsign}')
+                vehicles_for_location = [
+                    (f'{prefix}-AMB-001', 'ambulance', 'available'),
+                    (f'{prefix}-FIRE-001', 'fire_engine', 'available'),
+                    (f'{prefix}-GARDA-001', 'police_car', 'available'),
+                ]
+
+                # Add extra vehicles for major cities
+                if location_name in ['Dublin', 'Cork', 'Galway', 'Limerick']:
+                    vehicles_for_location.extend([
+                        (f'{prefix}-AMB-002', 'ambulance', 'available'),
+                        (f'{prefix}-FIRE-002', 'fire_engine', 'available'),
+                        (f'{prefix}-GARDA-002', 'police_car', 'available'),
+                    ])
+
+                # Dublin gets a helicopter
+                if location_name == 'Dublin':
+                    vehicles_for_location.append(('DUB-HELI-001', 'helicopter', 'available'))
+
+                for callsign, vehicle_type, status in vehicles_for_location:
+                    if not Vehicle.objects.filter(callsign=callsign).exists():
+                        # Random position around the base location
+                        lat = base_lat + random.uniform(-0.02, 0.02)
+                        lng = base_lng + random.uniform(-0.02, 0.02)
+                        location = Point(lng, lat, srid=4326)
+
+                        # Find nearest matching facility
+                        fac_type = facility_type_map[vehicle_type]
+                        base_facility = EmergencyFacility.objects.filter(
+                            type=fac_type
+                        ).knn_nearest(location, limit=1).first() if EmergencyFacility.objects.filter(
+                            type=fac_type
+                        ).exists() else None
+
+                        Vehicle.objects.create(
+                            callsign=callsign,
+                            vehicle_type=vehicle_type,
+                            status=status,
+                            current_position=location,
+                            heading=random.uniform(0, 360),
+                            speed_kmh=0,
+                            base_facility=base_facility,
+                        )
+                        created += 1
+                        self.stdout.write(f'Created vehicle: {callsign} ({location_name})')
+        else:
+            # Original Dublin-only behavior
+            vehicles_data = [
+                ('AMB-001', 'ambulance', 'available'),
+                ('AMB-002', 'ambulance', 'available'),
+                ('FIRE-001', 'fire_engine', 'available'),
+                ('FIRE-002', 'fire_engine', 'available'),
+                ('GARDA-001', 'police_car', 'available'),
+                ('GARDA-002', 'police_car', 'available'),
+                ('HELI-001', 'helicopter', 'available'),
+            ]
+
+            for callsign, vehicle_type, status in vehicles_data:
+                if not Vehicle.objects.filter(callsign=callsign).exists():
+                    # Random position around Dublin
+                    lat = 53.3498 + random.uniform(-0.05, 0.05)
+                    lng = -6.2603 + random.uniform(-0.05, 0.05)
+                    location = Point(lng, lat, srid=4326)
+
+                    fac_type = facility_type_map[vehicle_type]
+                    base_facility = EmergencyFacility.objects.filter(
+                        type=fac_type
+                    ).first()
+
+                    Vehicle.objects.create(
+                        callsign=callsign,
+                        vehicle_type=vehicle_type,
+                        status=status,
+                        current_position=location,
+                        heading=random.uniform(0, 360),
+                        speed_kmh=0,
+                        base_facility=base_facility,
+                    )
+                    created += 1
+                    self.stdout.write(f'Created vehicle: {callsign}')
 
         if created > 0:
             self.stdout.write(self.style.SUCCESS(f'Created {created} demo vehicles\n'))
