@@ -1,72 +1,117 @@
 {% extends 'frontend/base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="{% static 'frontend/css/home-map.css' %}">
+{% endblock %}
+
 {% block content %}
-<main class="container-fluid py-3">
-  <div class="row g-3">
-    <aside class="col-12 col-lg-3">
-      <div class="card shadow-sm h-100">
-        <div class="card-body">
-          <h1 class="h4 mb-3">Emergency Services Locator</h1>
-          <form id="filters" class="vstack gap-3" aria-describedby="filterHelp">
-            <div>
-              <label for="type" class="form-label">Service type</label>
-              <select id="type" class="form-select" aria-label="Service type">
-                <option value="">All</option>
-                <option value="hospital">Hospital</option>
-                <option value="fire_station">Fire Station</option>
-                <option value="police_station">Garda / Police</option>
-                <option value="ambulance_base">Ambulance Base</option>
-              </select>
-            </div>
+<div class="map-page">
+  <!-- Full-screen map -->
+  <div id="map" class="fullscreen-map" role="application" aria-label="Emergency services map" tabindex="0"></div>
 
-            <div>
-              <label for="radius" class="form-label">Radius (km)</label>
-              <input type="range" id="radius" class="form-range" min="1" max="50" value="10">
-              <div class="d-flex justify-content-between">
-                <span class="text-muted">1</span>
-                <span><output id="radiusOut" for="radius">10</output> km</span>
-                <span class="text-muted">50</span>
-              </div>
-            </div>
+  <!-- Floating sidebar panel -->
+  <aside class="map-sidebar" id="mapSidebar">
+    <div class="sidebar-header">
+      <h1 class="sidebar-title">
+        <i class="bi bi-geo-alt-fill"></i>
+        ES Locator
+      </h1>
+      <button class="sidebar-toggle d-lg-none" id="sidebarToggle" aria-label="Toggle sidebar">
+        <i class="bi bi-chevron-left"></i>
+      </button>
+    </div>
 
-            <div class="btn-group" role="group" aria-label="Actions">
-              <button id="locateBtn" type="button" class="btn btn-primary">Locate me</button>
-              <button id="dropPinBtn" type="button" class="btn btn-outline-secondary">Drop pin</button>
-            </div>
-            
-            <div class="btn-group w-100" role="group" aria-label="Search actions">
-              <button id="nearestBtn" type="button" class="btn btn-outline-primary">Nearest</button>
-              <button id="radiusBtn" type="button" class="btn btn-outline-secondary">Within radius</button>
-            </div>
-
-            <hr>
-
-            <!-- County dropdown removed - click counties on map instead -->
-            <div class="alert alert-info py-2 px-3 mb-0" role="status">
-              <small class="d-block mb-1"><strong>💡 How to use:</strong></small>
-              <small class="d-block mb-1">• Click <strong>Locate me</strong> or <strong>Drop pin</strong> to set your location</small>
-              <small class="d-block mb-1">• Click <strong>Nearest</strong> to find closest facilities</small>
-              <small class="d-block mb-1">• Click <strong>Within radius</strong> to search the area</small>
-              <small class="text-muted d-block">• Click any county on the map to view its facilities</small>
-            </div>
-
-            <div class="form-text" id="filterHelp">
-              Use the tools above or draw a polygon on the map to filter facilities.
-            </div>
-          </form>
-
-          <div class="mt-3 small text-muted" aria-live="polite" id="statusMsg">Ready.</div>
+    <div class="sidebar-content">
+      <form id="filters" aria-describedby="filterHelp">
+        <!-- Service Type -->
+        <div class="filter-group">
+          <label for="type" class="filter-label">
+            <i class="bi bi-hospital"></i> Service Type
+          </label>
+          <select id="type" class="form-select" aria-label="Service type">
+            <option value="">All Services</option>
+            <option value="hospital">Hospital</option>
+            <option value="fire_station">Fire Station</option>
+            <option value="police_station">Garda / Police</option>
+            <option value="ambulance_base">Ambulance Base</option>
+          </select>
         </div>
-      </div>
-    </aside>
 
-    <section class="col-12 col-lg-9">
-      <div id="map" class="rounded shadow-sm" role="application" aria-label="Emergency services map" tabindex="0"></div>
-    </section>
-  </div>
-</main>
+        <!-- Radius Slider -->
+        <div class="filter-group">
+          <label for="radius" class="filter-label">
+            <i class="bi bi-bullseye"></i> Search Radius
+          </label>
+          <div class="radius-control">
+            <input type="range" id="radius" class="form-range" min="1" max="50" value="10">
+            <div class="radius-labels">
+              <span>1 km</span>
+              <span class="radius-value"><output id="radiusOut" for="radius">10</output> km</span>
+              <span>50 km</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-group">
+          <button id="locateBtn" type="button" class="btn btn-primary btn-action">
+            <i class="bi bi-crosshair"></i>
+            <span>Locate Me</span>
+          </button>
+          <button id="dropPinBtn" type="button" class="btn btn-outline-secondary btn-action">
+            <i class="bi bi-pin-map"></i>
+            <span>Drop Pin</span>
+          </button>
+        </div>
+
+        <div class="action-group">
+          <button id="nearestBtn" type="button" class="btn btn-outline-primary btn-action">
+            <i class="bi bi-arrow-up-right-circle"></i>
+            <span>Find Nearest</span>
+          </button>
+          <button id="radiusBtn" type="button" class="btn btn-outline-secondary btn-action">
+            <i class="bi bi-circle"></i>
+            <span>Search Radius</span>
+          </button>
+        </div>
+
+        <!-- Tips Section -->
+        <div class="tips-section">
+          <div class="tips-header">
+            <i class="bi bi-lightbulb"></i> Quick Tips
+          </div>
+          <ul class="tips-list">
+            <li>Set your location first using <strong>Locate Me</strong> or <strong>Drop Pin</strong></li>
+            <li>Use <strong>Find Nearest</strong> for closest facilities</li>
+            <li>Click any <strong>county</strong> on the map to filter</li>
+            <li>Draw a polygon to search custom areas</li>
+          </ul>
+        </div>
+
+        <p class="form-text" id="filterHelp">
+          <i class="bi bi-info-circle"></i> Draw on the map or use the controls above to find emergency services.
+        </p>
+      </form>
+    </div>
+
+    <!-- Status Message -->
+    <div class="sidebar-footer">
+      <div class="status-indicator" aria-live="polite" id="statusMsg">
+        <i class="bi bi-check-circle"></i>
+        <span>Ready</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Mobile toggle button (when sidebar is collapsed) -->
+  <button class="mobile-sidebar-btn d-lg-none" id="mobileSidebarBtn" aria-label="Open filters">
+    <i class="bi bi-sliders"></i>
+  </button>
+</div>
 {% endblock %}
 
 {% block extra_js %}
-{% load static %}
 <script type="module" src="{% static 'frontend/js/map.js' %}"></script>
 {% endblock %}

@@ -1,0 +1,553 @@
+/* ===================================================================
+   Home Map Page - Modern Full-Screen Layout
+   =================================================================== */
+
+/* Page Container */
+.map-page {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 56px); /* Full viewport minus navbar */
+  overflow: hidden;
+}
+
+/* Full-screen Map */
+.fullscreen-map {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+}
+
+/* Override the default map height from map.css */
+.map-page #map {
+  height: 100% !important;
+  min-height: 100% !important;
+  border-radius: 0;
+}
+
+/* ===================================================================
+   Floating Sidebar
+   =================================================================== */
+
+.map-sidebar {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  bottom: 16px;
+  width: 340px;
+  max-width: calc(100vw - 32px);
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 16px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06),
+    0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease;
+}
+
+/* Sidebar collapsed state for mobile */
+.map-sidebar.collapsed {
+  transform: translateX(-100%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ===================================================================
+   Sidebar Header
+   =================================================================== */
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  color: white;
+}
+
+.sidebar-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white !important;
+}
+
+.sidebar-title i {
+  font-size: 1.5rem;
+}
+
+.sidebar-toggle {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* ===================================================================
+   Sidebar Content
+   =================================================================== */
+
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Filter Groups */
+.filter-group {
+  margin-bottom: 20px;
+}
+
+.filter-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
+}
+
+.filter-label i {
+  color: var(--color-primary);
+  font-size: 1rem;
+}
+
+/* Radius Control */
+.radius-control {
+  padding: 4px 0;
+}
+
+.radius-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  margin-top: 4px;
+}
+
+.radius-value {
+  font-weight: 600;
+  color: var(--color-primary);
+  font-size: 0.875rem;
+}
+
+/* Action Groups */
+.action-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.btn-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 12px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.btn-action i {
+  font-size: 1.25rem;
+}
+
+.btn-action:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 119, 182, 0.25);
+}
+
+.btn-action:active {
+  transform: translateY(0);
+}
+
+/* Primary action button enhanced */
+.btn-action.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border: none;
+}
+
+.btn-action.btn-primary:hover {
+  background: linear-gradient(135deg, var(--color-primary-light) 0%, var(--color-primary) 100%);
+}
+
+/* ===================================================================
+   Tips Section
+   =================================================================== */
+
+.tips-section {
+  background: var(--color-primary-subtle);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.tips-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  margin-bottom: 12px;
+}
+
+.tips-header i {
+  color: var(--color-emergency-light);
+}
+
+.tips-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 0.8125rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.tips-list li {
+  margin-bottom: 6px;
+}
+
+.tips-list li:last-child {
+  margin-bottom: 0;
+}
+
+.tips-list strong {
+  color: var(--color-primary-dark);
+}
+
+/* ===================================================================
+   Form Text
+   =================================================================== */
+
+.sidebar-content .form-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+.sidebar-content .form-text i {
+  margin-top: 2px;
+}
+
+/* ===================================================================
+   Sidebar Footer
+   =================================================================== */
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--color-surface);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8125rem;
+  color: var(--color-text-tertiary);
+}
+
+.status-indicator i {
+  color: #28a745;
+}
+
+.status-indicator[data-status="error"] {
+  color: var(--color-emergency);
+}
+
+.status-indicator[data-status="error"] i {
+  color: var(--color-emergency);
+}
+
+.status-indicator[data-status="loading"] i {
+  color: var(--color-primary);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* ===================================================================
+   Mobile Sidebar Button
+   =================================================================== */
+
+.mobile-sidebar-btn {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 48px;
+  height: 48px;
+  background: white;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mobile-sidebar-btn i {
+  font-size: 1.25rem;
+  color: var(--color-primary);
+}
+
+.mobile-sidebar-btn:hover {
+  background: var(--color-primary);
+}
+
+.mobile-sidebar-btn:hover i {
+  color: white;
+}
+
+/* ===================================================================
+   Form Controls Enhancement
+   =================================================================== */
+
+.map-sidebar .form-select {
+  background-color: white;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.map-sidebar .form-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.1);
+}
+
+.map-sidebar .form-range {
+  height: 6px;
+}
+
+.map-sidebar .form-range::-webkit-slider-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--color-primary);
+  border: 3px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.map-sidebar .form-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  background: var(--color-primary);
+  border: 3px solid white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ===================================================================
+   Leaflet Controls Repositioning
+   =================================================================== */
+
+/* Move zoom controls to right side */
+.map-page .leaflet-top.leaflet-left {
+  left: auto;
+  right: 10px;
+}
+
+.map-page .leaflet-control-zoom {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.map-page .leaflet-control-zoom a {
+  width: 36px;
+  height: 36px;
+  line-height: 36px;
+  font-size: 18px;
+  color: var(--color-text-primary);
+  background: white;
+  border: none;
+}
+
+.map-page .leaflet-control-zoom a:hover {
+  background: var(--color-surface);
+  color: var(--color-primary);
+}
+
+/* Draw controls styling */
+.map-page .leaflet-draw {
+  margin-top: 10px;
+}
+
+.map-page .leaflet-draw-toolbar a {
+  border-radius: 8px;
+  margin-bottom: 4px;
+}
+
+/* Attribution styling */
+.map-page .leaflet-control-attribution {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(4px);
+  padding: 4px 8px;
+  border-radius: 4px 0 0 0;
+  font-size: 10px;
+}
+
+/* ===================================================================
+   Responsive Design
+   =================================================================== */
+
+/* Tablet */
+@media (max-width: 991.98px) {
+  .map-sidebar {
+    width: 320px;
+  }
+
+  .map-sidebar.collapsed + .mobile-sidebar-btn {
+    display: flex;
+  }
+
+  /* Initially collapse on mobile */
+  .map-sidebar {
+    transform: translateX(-100%);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .map-sidebar.open {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-sidebar-btn {
+    display: flex;
+  }
+
+  .mobile-sidebar-btn.hidden {
+    display: none;
+  }
+}
+
+/* Mobile */
+@media (max-width: 575.98px) {
+  .map-page {
+    height: calc(100vh - 56px);
+  }
+
+  .map-sidebar {
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 0;
+  }
+
+  .map-sidebar.open {
+    border-radius: 0;
+  }
+
+  .sidebar-header {
+    padding: 16px;
+  }
+
+  .sidebar-content {
+    padding: 16px;
+  }
+
+  .action-group {
+    grid-template-columns: 1fr;
+  }
+
+  .btn-action {
+    flex-direction: row;
+    justify-content: center;
+    padding: 12px 16px;
+  }
+}
+
+/* ===================================================================
+   Dark Overlay for Mobile
+   =================================================================== */
+
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.sidebar-overlay.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ===================================================================
+   Map Popup Enhancement
+   =================================================================== */
+
+.map-page .leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+.map-page .leaflet-popup-tip {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* ===================================================================
+   Scrollbar Styling
+   =================================================================== */
+
+.sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}

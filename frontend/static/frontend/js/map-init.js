@@ -44,17 +44,61 @@ function setupDrawTools() {
   });
 }
 
+function setupSidebar() {
+  const sidebar = $('#mapSidebar');
+  const toggleBtn = $('#sidebarToggle');
+  const mobileBtn = $('#mobileSidebarBtn');
+
+  if (!sidebar) return;
+
+  // Create overlay for mobile
+  let overlay = document.querySelector('.sidebar-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'sidebar-overlay';
+    document.querySelector('.map-page')?.appendChild(overlay);
+  }
+
+  function openSidebar() {
+    sidebar.classList.add('open');
+    mobileBtn?.classList.add('hidden');
+    overlay?.classList.add('visible');
+  }
+
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    mobileBtn?.classList.remove('hidden');
+    overlay?.classList.remove('visible');
+  }
+
+  // Toggle button inside sidebar
+  toggleBtn?.addEventListener('click', closeSidebar);
+
+  // Mobile floating button
+  mobileBtn?.addEventListener('click', openSidebar);
+
+  // Close on overlay click
+  overlay?.addEventListener('click', closeSidebar);
+
+  // Close sidebar when clicking on the map (mobile only)
+  state.map.on('click', () => {
+    if (window.innerWidth < 992 && sidebar.classList.contains('open')) {
+      closeSidebar();
+    }
+  });
+}
+
 function setupEvents() {
   $('#radius')?.addEventListener('input', (event) => {
     const output = $('#radiusOut');
     if (output) output.value = event.target.value;
   });
-  
+
   $('#locateBtn')?.addEventListener('click', () => locateUser(true));
   $('#dropPinBtn')?.addEventListener('click', () => toggleDropPinMode());
   $('#nearestBtn')?.addEventListener('click', () => queryNearest());
   $('#radiusBtn')?.addEventListener('click', () => queryWithinRadius());
-  
+
   state.map.on('click', handleMapClick);
 }
 
@@ -67,6 +111,7 @@ export function initMap() {
   clearMarkers();
   setupDrawTools();
   setupEvents();
+  setupSidebar();
   loadCounties();
-  status('Map ready. Click any county or use filters above.');
+  status('Map ready. Click any county or use filters.');
 }
