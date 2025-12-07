@@ -110,6 +110,48 @@
     <!-- Center Map -->
     <div class="dashboard-map">
       <div id="map" class="map-container" role="application" aria-label="Interactive incident map"></div>
+
+      <!-- Map Layer Controls -->
+      <div class="map-layer-controls">
+        <button class="layer-control-toggle" id="layerControlToggle" title="Map Layers">
+          <i class="bi bi-layers"></i>
+        </button>
+        <div class="layer-control-panel" id="layerControlPanel">
+          <h6>Base Map</h6>
+          <div class="base-map-selector">
+            <button class="base-map-btn active" data-layer="street" title="Street Map">
+              <i class="bi bi-map"></i>
+              <span>Street</span>
+            </button>
+            <button class="base-map-btn" data-layer="satellite" title="Satellite View">
+              <i class="bi bi-globe"></i>
+              <span>Satellite</span>
+            </button>
+          </div>
+          <h6>Overlays</h6>
+          <div class="layer-option">
+            <label for="layerIncidents">
+              <i class="bi bi-exclamation-triangle"></i>
+              Incidents
+            </label>
+            <input class="form-check-input" type="checkbox" id="layerIncidents" checked>
+          </div>
+          <div class="layer-option">
+            <label for="layerVehicles">
+              <i class="bi bi-truck"></i>
+              Vehicles
+            </label>
+            <input class="form-check-input" type="checkbox" id="layerVehicles" checked>
+          </div>
+          <div class="layer-option">
+            <label for="layerRoutes">
+              <i class="bi bi-signpost-2"></i>
+              Routes
+            </label>
+            <input class="form-check-input" type="checkbox" id="layerRoutes" checked>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Right Panel -->
@@ -120,6 +162,11 @@
             <li class="nav-item" role="presentation">
               <button class="nav-link active" id="incidents-tab" data-bs-toggle="tab" data-bs-target="#incidents-panel" type="button" role="tab">
                 <i class="bi bi-list-ul me-1"></i> Incidents
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="queue-tab" data-bs-toggle="tab" data-bs-target="#queue-panel" type="button" role="tab">
+                <i class="bi bi-hourglass-split me-1"></i> Queue
               </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -139,6 +186,17 @@
                     <span class="visually-hidden">Loading incidents...</span>
                   </div>
                   <p class="mt-2 mb-0">Loading incidents...</p>
+                </div>
+              </div>
+            </div>
+            <!-- Priority Queue -->
+            <div class="tab-pane fade h-100" id="queue-panel" role="tabpanel">
+              <div id="priorityQueue" class="priority-queue">
+                <div class="text-center text-muted p-4">
+                  <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading queue...</span>
+                  </div>
+                  <p class="mt-2 mb-0">Loading dispatch queue...</p>
                 </div>
               </div>
             </div>

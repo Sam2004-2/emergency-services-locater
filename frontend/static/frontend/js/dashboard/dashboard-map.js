@@ -15,6 +15,11 @@ let previewRouteLayer;
 let heatLayer = null;
 let heatmapEnabled = false;
 
+// Base map layers
+let streetLayer;
+let satelliteLayer;
+let currentBaseLayer = 'street';
+
 const SEVERITY_COLORS = {
   critical: '#dc3545',
   high: '#fd7e14',
@@ -50,10 +55,19 @@ export function initMap() {
     zoom: 12
   });
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  // Create base layers
+  streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
     maxZoom: 19
-  }).addTo(map);
+  });
+
+  satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '© Esri',
+    maxZoom: 19
+  });
+
+  // Add default street layer
+  streetLayer.addTo(map);
 
   // Initialize marker layers
   incidentMarkers = L.layerGroup().addTo(map);
@@ -65,7 +79,91 @@ export function initMap() {
   // Add click handler for creating incidents
   map.on('click', handleMapClick);
 
+  // Initialize layer controls
+  initLayerControls();
+
   return map;
+}
+
+/**
+ * Initialize layer control panel
+ */
+function initLayerControls() {
+  const toggleBtn = document.getElementById('layerControlToggle');
+  const panel = document.getElementById('layerControlPanel');
+
+  if (!toggleBtn || !panel) return;
+
+  // Toggle panel visibility
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    panel.classList.toggle('show');
+    toggleBtn.classList.toggle('active');
+  });
+
+  // Close panel when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!panel.contains(e.target) && !toggleBtn.contains(e.target)) {
+      panel.classList.remove('show');
+      toggleBtn.classList.remove('active');
+    }
+  });
+
+  // Base map buttons
+  const baseMapBtns = panel.querySelectorAll('.base-map-btn');
+  baseMapBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const layer = btn.dataset.layer;
+      switchBaseLayer(layer);
+      baseMapBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Layer toggles
+  document.getElementById('layerIncidents')?.addEventListener('change', (e) => {
+    toggleLayerVisibility(incidentMarkers, e.target.checked);
+  });
+
+  document.getElementById('layerVehicles')?.addEventListener('change', (e) => {
+    toggleLayerVisibility(vehicleMarkers, e.target.checked);
+  });
+
+  document.getElementById('layerRoutes')?.addEventListener('change', (e) => {
+    toggleLayerVisibility(routeLayer, e.target.checked);
+    toggleLayerVisibility(activeRoutesLayer, e.target.checked);
+  });
+}
+
+/**
+ * Switch between base map layers
+ */
+function switchBaseLayer(layerType) {
+  if (layerType === 'satellite' && currentBaseLayer !== 'satellite') {
+    map.removeLayer(streetLayer);
+    satelliteLayer.addTo(map);
+    currentBaseLayer = 'satellite';
+  } else if (layerType === 'street' && currentBaseLayer !== 'street') {
+    map.removeLayer(satelliteLayer);
+    streetLayer.addTo(map);
+    currentBaseLayer = 'street';
+  }
+}
+
+/**
+ * Toggle layer visibility
+ */
+function toggleLayerVisibility(layer, visible) {
+  if (!layer) return;
+  if (visible) {
+    if (!map.hasLayer(layer)) {
+      layer.addTo(map);
+    }
+  } else {
+    if (map.hasLayer(layer)) {
+      map.removeLayer(layer);
+    }
+  }
 }
 
 // Default fallback icon (warning triangle)

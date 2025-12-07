@@ -419,3 +419,125 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+
+/**
+ * Get priority score for sorting
+ * Higher score = higher priority
+ */
+function getPriorityScore(incident) {
+  const severityScore = { critical: 10000, high: 1000, medium: 100, low: 10 };
+  const props = incident.properties;
+  const waitingMinutes = (Date.now() - new Date(props.created_at)) / 60000;
+  return (severityScore[props.severity] || 0) + waitingMinutes;
+}
+
+/**
+ * Render priority queue
+ */
+export function renderPriorityQueue() {
+  const queueContainer = document.getElementById('priorityQueue');
+  if (!queueContainer) return;
+
+  // Get only pending incidents
+  const incidents = DashboardState.incidents || [];
+  const pendingIncidents = incidents.filter(inc => inc.properties.status === 'pending');
+
+  if (pendingIncidents.length === 0) {
+    queueContainer.innerHTML = `
+      <div class="empty-queue">
+        <svg viewBox="0 0 24 24" fill="currentColor" width="48" height="48">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+        </svg>
+        <p class="success-text mb-2"><strong>All clear!</strong></p>
+        <p class="small">No pending incidents in the queue.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Sort by priority score (highest first)
+  const sorted = [...pendingIncidents].sort((a, b) => {
+    return getPriorityScore(b) - getPriorityScore(a);
+  });
+
+  const queueHeader = `
+    <div class="queue-header">
+      <h6><i class="bi bi-hourglass-split"></i> Dispatch Queue</h6>
+      <span class="queue-count">${sorted.length} pending</span>
+    </div>
+  `;
+
+  const queueCards = sorted.map((incident, index) => renderQueueCard(incident, index === 0)).join('');
+
+  queueContainer.innerHTML = queueHeader + queueCards;
+
+  // Add click handlers
+  sorted.forEach(incident => {
+    const card = document.getElementById(`queue-${incident.id}`);
+    if (card) {
+      card.addEventListener('click', () => {
+        DashboardState.selectIncident(incident);
+        const detailTab = document.getElementById('detail-tab');
+        if (detailTab) {
+          detailTab.click();
+        }
+      });
+    }
+  });
+}
+
+/**
+ * Render single queue card
+ */
+function renderQueueCard(incident, isFirst) {
+  const props = incident.properties;
+  const incidentId = incident.id;
+
+  // Calculate waiting time
+  const createdAt = new Date(props.created_at);
+  const waitingMs = Date.now() - createdAt;
+  const waitingMinutes = Math.floor(waitingMs / 60000);
+
+  let waitingDisplay;
+  let waitingClass = '';
+
+  if (waitingMinutes < 60) {
+    waitingDisplay = `${waitingMinutes}m`;
+    if (waitingMinutes > 30) waitingClass = 'warning';
+    if (waitingMinutes > 45) waitingClass = 'urgent';
+  } else {
+    const hours = Math.floor(waitingMinutes / 60);
+    const mins = waitingMinutes % 60;
+    waitingDisplay = `${hours}h ${mins}m`;
+    waitingClass = 'urgent';
+  }
+
+  return `
+    <div
+      id="queue-${incidentId}"
+      class="queue-card ${props.severity} ${isFirst ? 'next-up' : ''}"
+      role="button"
+      tabindex="0"
+    >
+      ${isFirst ? '<span class="next-badge">Next Up</span>' : ''}
+      <div class="queue-card-header">
+        <h6>${escapeHtml(props.title)}</h6>
+        <span class="severity-badge badge bg-${SEVERITY_BADGE[props.severity]}">${props.severity_display}</span>
+      </div>
+      <div class="queue-card-meta">
+        <span>
+          <i class="bi bi-tag"></i>
+          ${props.incident_type_display}
+        </span>
+        <span>
+          <i class="bi bi-geo-alt"></i>
+          ${escapeHtml(props.address || 'No address').substring(0, 25)}${(props.address || '').length > 25 ? '...' : ''}
+        </span>
+        <span class="waiting-time ${waitingClass}">
+          <i class="bi bi-clock"></i>
+          ${waitingDisplay} waiting
+        </span>
+      </div>
+    </div>
+  `;
+}

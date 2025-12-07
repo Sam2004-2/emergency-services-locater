@@ -7,7 +7,7 @@
 import { DashboardAPI } from './dashboard-api.js';
 import { DashboardState } from './dashboard-state.js';
 import { initMap, renderIncidents, renderVehicles, focusIncident, drawRoute, clearRoute, renderActiveRoutes, drawPreviewRoute, clearPreviewRoute, toggleHeatmap, updateHeatmap } from './dashboard-map.js';
-import { renderIncidentsList, renderIncidentDetail, updateStats } from './dashboard-list.js';
+import { renderIncidentsList, renderIncidentDetail, updateStats, renderPriorityQueue } from './dashboard-list.js';
 import { startPolling, stopPolling, pollNow } from './dashboard-polling.js';
 import { initForms, openDispatchModal, showNotification } from './dashboard-forms.js';
 
@@ -58,6 +58,7 @@ function setupStateListeners() {
     const filtered = DashboardState.getFilteredIncidents();
     renderIncidents(filtered);
     renderIncidentsList();
+    renderPriorityQueue();
     updateStats();
     updateHeatmap(); // Refresh heatmap if enabled
   });
