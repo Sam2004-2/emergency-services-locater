@@ -108,6 +108,12 @@ body {
   line-height: var(--line-height-base);
 }
 
+/* Ensure navbar is always on top of floating panels */
+.navbar {
+  position: relative;
+  z-index: 1050 !important;
+}
+
 /* ===================================================================
    Typography
    =================================================================== */
