@@ -36,6 +36,7 @@ export const DashboardAPI = {
     if (filters.incident_type) params.append('incident_type', filters.incident_type);
     
     const response = await fetch(`${API_BASE}/incidents/?${params}`, {
+      credentials: 'same-origin',
       headers: {
         'X-CSRFToken': getCSRFToken()
       }
@@ -49,6 +50,7 @@ export const DashboardAPI = {
    */
   async getIncident(id) {
     const response = await fetch(`${API_BASE}/incidents/${id}/`, {
+      credentials: 'same-origin',
       headers: {
         'X-CSRFToken': getCSRFToken()
       }
@@ -88,6 +90,7 @@ export const DashboardAPI = {
   async updateIncidentStatus(id, status) {
     const response = await fetch(`${API_BASE}/incidents/${id}/update_status/`, {
       method: 'POST',
+      credentials: 'same-origin',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCSRFToken()
@@ -110,6 +113,7 @@ export const DashboardAPI = {
 
     const response = await fetch(`${API_BASE}/incidents/${incidentId}/dispatch/`, {
       method: 'POST',
+      credentials: 'same-origin',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCSRFToken()
@@ -129,6 +133,7 @@ export const DashboardAPI = {
   async getRoute(incidentId, fromLat, fromLng) {
     const params = new URLSearchParams({ from_lat: fromLat, from_lng: fromLng });
     const response = await fetch(`${API_BASE}/incidents/${incidentId}/route/?${params}`, {
+      credentials: 'same-origin',
       headers: {
         'X-CSRFToken': getCSRFToken()
       }
@@ -142,6 +147,7 @@ export const DashboardAPI = {
    */
   async getRoutePreview(incidentId, vehicleId) {
     const response = await fetch(`${API_BASE}/incidents/${incidentId}/route_preview/?vehicle_id=${vehicleId}`, {
+      credentials: 'same-origin',
       headers: {
         'X-CSRFToken': getCSRFToken()
       }
@@ -155,6 +161,7 @@ export const DashboardAPI = {
    */
   async getActiveRoutes() {
     const response = await fetch(`${API_BASE}/incidents/active_routes/`, {
+      credentials: 'same-origin',
       headers: {
         'X-CSRFToken': getCSRFToken()
       }
@@ -172,6 +179,7 @@ export const DashboardAPI = {
     if (filters.vehicle_type) params.append('vehicle_type', filters.vehicle_type);
     
     const response = await fetch(`${API_BASE}/vehicles/?${params}`, {
+      credentials: 'same-origin',
       headers: {
         'X-CSRFToken': getCSRFToken()
       }
@@ -186,6 +194,7 @@ export const DashboardAPI = {
   async getAvailableVehicles(type = null) {
     const params = type ? `?type=${type}` : '';
     const response = await fetch(`${API_BASE}/vehicles/available/${params}`, {
+      credentials: 'same-origin',
       headers: {
         'X-CSRFToken': getCSRFToken()
       }
@@ -203,6 +212,7 @@ export const DashboardAPI = {
     if (filters.vehicle) params.append('vehicle', filters.vehicle);
     
     const response = await fetch(`${API_BASE}/dispatches/?${params}`, {
+      credentials: 'same-origin',
       headers: {
         'X-CSRFToken': getCSRFToken()
       }
@@ -217,6 +227,7 @@ export const DashboardAPI = {
   async acknowledgeDispatch(dispatchId) {
     const response = await fetch(`${API_BASE}/dispatches/${dispatchId}/acknowledge/`, {
       method: 'POST',
+      credentials: 'same-origin',
       headers: {
         'X-CSRFToken': getCSRFToken()
       }
@@ -233,6 +244,7 @@ export const DashboardAPI = {
    */
   async getCurrentUser() {
     const response = await fetch(`${API_BASE}/auth/me/`, {
+      credentials: 'same-origin',
       headers: {
         'X-CSRFToken': getCSRFToken()
       }
