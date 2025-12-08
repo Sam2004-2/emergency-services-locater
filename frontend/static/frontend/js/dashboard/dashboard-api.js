@@ -17,6 +17,7 @@ export const DashboardAPI = {
    */
   async getActiveIncidents() {
     const response = await fetch(`${API_BASE}/incidents/active/`, {
+      credentials: 'same-origin',
       headers: {
         'X-CSRFToken': getCSRFToken()
       }
@@ -62,6 +63,7 @@ export const DashboardAPI = {
   async createIncident(data) {
     const response = await fetch(`${API_BASE}/incidents/`, {
       method: 'POST',
+      credentials: 'same-origin',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCSRFToken()
@@ -69,8 +71,13 @@ export const DashboardAPI = {
       body: JSON.stringify(data)
     });
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Failed to create incident');
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        const error = await response.json();
+        throw new Error(error.detail || 'Failed to create incident');
+      } else {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
     }
     return response.json();
   },
