@@ -15,7 +15,7 @@ class IncidentSerializer(GeoFeatureModelSerializer):
     """Serializer for Incident model with GeoJSON support."""
 
     # Explicitly declare GeometryField for proper GeoJSON serialization
-    location = GeometryField(read_only=True)
+    location = GeometryField()
     route_geometry = GeometryField(read_only=True, allow_null=True)
     
     incident_type_display = serializers.CharField(
